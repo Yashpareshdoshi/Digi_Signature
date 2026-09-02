@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qds_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=Quantum-Inspired Cyber Threat Detection
+      - DATABASE_URL=sqlite:///./qds_database.db
+      - CORS_ORIGINS=["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"]
+    volumes:
+      - ./backend/qds_database.db:/app/qds_database.db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: qds_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
