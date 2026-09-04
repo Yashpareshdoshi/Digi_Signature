@@ -77,14 +77,53 @@ def calculate_forgery_probability(
     p_value_legitimate = float(1.0 - stats.binom.cdf(k - 1, n_shots, theta_0)) if k > 0 else 1.0
     
     return {
-        "forgery_probability": p_forge,
+        "likelihood_anomaly_score": p_forge,
+        "forgery_probability": p_forge, # Backward-compatible alias
         "p_value_legitimate": p_value_legitimate,
         "k_errors": k,
         "n_shots": n_shots,
         "observed_error_rate": float(error_rate),
         "baseline_error_rate": float(theta_0),
         "forged_expected_error_rate": float(theta_1),
-        "confidence_level": 0.95
+        "confidence_level": 0.95,
+        "model_description": "Bayesian Likelihood Ratio Anomaly Score under Point Hypotheses H0 vs H1 with uniform prior"
+    }
+
+def compute_false_positive_negative_rates(trial_records: list) -> Dict[str, float]:
+    """
+    Computes empirical False Positive Rate (FPR) and False Negative Rate (FNR)
+    from a list of experiment trials.
+    Each trial dict must have:
+      - 'is_attack': bool or int
+      - 'decision': 'VERIFIED' | 'SUSPICIOUS' | 'REJECTED'
+    """
+    legit_total = 0
+    legit_rejected = 0 # False positive (Type I error)
+    attack_total = 0
+    attack_verified = 0 # False negative (Type II error)
+
+    for t in trial_records:
+        is_attack = bool(t.get("is_attack", False))
+        dec = t.get("decision", "VERIFIED")
+        if not is_attack:
+            legit_total += 1
+            if dec in ("REJECTED", "SUSPICIOUS"):
+                legit_rejected += 1
+        else:
+            attack_total += 1
+            if dec == "VERIFIED":
+                attack_verified += 1
+
+    fpr = (legit_rejected / legit_total) if legit_total > 0 else 0.0
+    fnr = (attack_verified / attack_total) if attack_total > 0 else 0.0
+
+    return {
+        "false_positive_rate": float(fpr),
+        "false_negative_rate": float(fnr),
+        "false_positive_percentage": round(fpr * 100.0, 2),
+        "false_negative_percentage": round(fnr * 100.0, 2),
+        "total_legitimate_trials": legit_total,
+        "total_attack_trials": attack_total
     }
 
 def analyze_measurement_statistics(
@@ -119,6 +158,7 @@ def analyze_measurement_statistics(
         "confidence_lower": ci_lower,
         "confidence_upper": ci_upper,
         "confidence_interval_text": f"[{ci_lower*100.0:.2f}%, {ci_upper*100.0:.2f}%]",
+        "likelihood_anomaly_score": forgery_metrics["likelihood_anomaly_score"],
         "forgery_probability": forgery_metrics["forgery_probability"],
         "forgery_probability_percentage": round(forgery_metrics["forgery_probability"] * 100.0, 2),
         "p_value_legitimate": forgery_metrics["p_value_legitimate"],

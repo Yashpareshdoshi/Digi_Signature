@@ -3,6 +3,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)
+![Qiskit](https://img.shields.io/badge/Qiskit-1.3+-6929C4?logo=ibm&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)
@@ -17,18 +18,21 @@
 ## 📑 Table of Contents
 
 - [🎯 Executive Summary & Problem Formulation](#-executive-summary--problem-formulation)
+- [🛠️ Technology Stack](#️-technology-stack)
 - [🔬 Core Quantum Protocol (Teleportation-Based QDS)](#-core-quantum-protocol-teleportation-based-qds)
 - [📐 Mathematical & Statistical Formulations](#-mathematical--statistical-formulations)
 - [🛡️ Deterministic Threat Detection Engine (Strictly ZERO AI/ML)](#️-deterministic-threat-detection-engine-strictly-zero-aiml)
-- [🚀 In-Depth Walkthrough Guide](#-in-depth-walkthrough-guide)
+- [🚀 In-Depth Feature Walkthrough Guide](#-in-depth-feature-walkthrough-guide)
   - [1. Real-Time Operational Dashboard](#1-real-time-operational-dashboard)
   - [2. Interactive QDS Protocol Simulator](#2-interactive-qds-protocol-simulator)
-  - [3. Deterministic Verification Center](#3-deterministic-verification-center)
-  - [4. Multi-Scenario Cyber Attack Injection Simulator](#4-multi-scenario-cyber-attack-injection-simulator)
-  - [5. Quantum State & Bloch Sphere Visualizer](#5-quantum-state--bloch-sphere-visualizer)
-  - [6. Benchmark Analytics & Performance Metrics](#6-benchmark-analytics--performance-metrics)
-  - [7. Security Incident Alert Center](#7-security-incident-alert-center)
-  - [8. 1-Click Automated Research Demonstration](#8-1-click-automated-research-demonstration)
+  - [3. Dual Quantum Backends (NumPy & Qiskit Aer)](#3-dual-quantum-backends-numpy--qiskit-aer)
+  - [4. Interactive Qiskit Circuit & OpenQASM Visualizer](#4-interactive-qiskit-circuit--openqasm-visualizer)
+  - [5. Deterministic Verification Center](#5-deterministic-verification-center)
+  - [6. Multi-Scenario Cyber Attack Injection Simulator](#6-multi-scenario-cyber-attack-injection-simulator)
+  - [7. Automated Parameter Sweeps & Benchmarks](#7-automated-parameter-sweeps--benchmarks)
+  - [8. Quantum State & Bloch Sphere Visualizer](#8-quantum-state--bloch-sphere-visualizer)
+  - [9. Security Incident Alert Center](#9-security-incident-alert-center)
+  - [10. 1-Click Automated Research Demonstration](#10-1-click-automated-research-demonstration)
 - [🏗️ High-Level System Architecture](#️-high-level-system-architecture)
 - [📁 Project Directory Structure](#-project-directory-structure)
 - [📡 REST API Reference](#-rest-api-reference)
@@ -58,19 +62,20 @@ This project implements an academic research simulation of **Teleportation-Based
 - **Provable Explanations**: Every security decision produces a rigorous step-by-step mathematical reasoning breakdown.
 
 > [!NOTE]
-> This software is an educational and academic research simulation prototype. It demonstrates quantum statevectors, Bell state entanglement, 3-qubit teleportation, and deterministic threat analysis on classical hardware for demonstration and research purposes.
+> This software is an educational and academic research simulation platform. It demonstrates quantum statevectors, Bell state entanglement, 3-qubit teleportation, and deterministic threat analysis using both pure NumPy statevector math and IBM Qiskit Aer circuit simulation.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Python 3.13, FastAPI, NumPy, SciPy, SQLAlchemy ORM, Pydantic V2, Pytest.
-- **Quantum Simulation**: Exact NumPy $2^n$-statevector and circuit simulator ($X, Y, Z, H, S, T, CNOT$, Projective Measurements).
-- **Database**: SQLite (local prototype with PostgreSQL-ready SQLAlchemy schema).
-- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Recharts.
-- **Testing**: Comprehensive Pytest suite covering quantum fidelity, statistical intervals, threat rules, and REST APIs.
-- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Recharts.
-- **Testing**: Comprehensive Pytest suite covering quantum fidelity, statistical intervals, threat rules, and REST APIs.
+- **Backend Framework**: Python 3.13, FastAPI, Pydantic V2, Uvicorn, Pytest.
+- **Quantum Simulation Layer**:
+  - **NumPy Reference Backend**: Exact $2^n$-statevector matrix simulator ($X, Y, Z, H, S, T, CNOT$, Projective Measurements).
+  - **IBM Qiskit Backend**: Qiskit 1.3+ with `AerSimulator`, `QuantumCircuit`, dynamic `c_if` classical conditioning, OpenQASM 3.0 export, and ASCII circuit visualization.
+- **Statistical Mathematics Engine**: SciPy, Wilson score interval algorithms, Bayesian binomial likelihood ratio tests.
+- **Database & Storage**: SQLite (local prototype with PostgreSQL-ready SQLAlchemy schema).
+- **Frontend Layer**: React 18, Vite 5, TypeScript 5, Tailwind CSS 3.4, Lucide Icons, Recharts.
+- **Authentication**: JWT token authorization and API key security filters.
 
 ---
 
@@ -230,7 +235,7 @@ The threat detection pipeline processes every signature through a deterministic 
 
 ---
 
-## 🚀 In-Depth Walkthrough Guide
+## 🚀 In-Depth Feature Walkthrough Guide
 
 ### 1. Real-Time Operational Dashboard
 - **Top KPI Cards**: Displays Active Signatures, Total Verification Sessions, Detected Threat Incidents, Protocol Success Rate (100%), and Average Backend Latency (~2.5ms).
@@ -249,7 +254,17 @@ The threat detection pipeline processes every signature through a deterministic 
    - **Step 5**: Bob Pauli Correction Matrix ($Z^{b_0} X^{b_1}$) on $q_2$.
    - **Step 6**: Teleportation Fidelity Calculation ($\mathcal{F} = |\langle\psi_{\text{in}}|\psi_{\text{out}}\rangle|^2 = 1.000$).
 
-### 3. Deterministic Verification Center
+### 3. Dual Quantum Backends (NumPy & Qiskit Aer)
+Seamlessly switch or compare simulation backends via unified factory abstraction:
+- **NumPy Reference Backend**: Direct statevector calculations, instantaneous response time, pure state fidelity checks.
+- **Qiskit Aer Backend**: Industry-grade circuit compilation, dynamic `c_if` conditional Pauli corrections, shot-based sampling, and OpenQASM 3.0 export.
+
+### 4. Interactive Qiskit Circuit & OpenQASM Visualizer
+- Click **"View Qiskit Circuit"** inside the Simulator or Experiments views.
+- Renders full 3-qubit teleportation circuit with gate stages, barrier lines, and classical registers.
+- Inspect and copy raw **OpenQASM 3.0** circuit code directly for execution on IBM Quantum real hardware.
+
+### 5. Deterministic Verification Center
 - Select any active signature from the database.
 - Configure verification shot count ($100$ to $10,000$ shots).
 - Execute projective measurement and inspect:
@@ -260,7 +275,7 @@ The threat detection pipeline processes every signature through a deterministic 
   - **Deterministic Rule Triggered**: Exact rule number and logical statement.
   - **Step-by-Step Mathematical Explanation**: Printable audit reasoning breakdown.
 
-### 4. Multi-Scenario Cyber Attack Injection Simulator
+### 6. Multi-Scenario Cyber Attack Injection Simulator
 Test the deterministic defense engine by safely injecting simulated attacks against any signature:
 - **Signature Forgery**: Simulates basis-guessing without genuine EPR entanglement ($E \approx 50\%$).
 - **Signer Impersonation**: Replaces signer ID with unauthorized credentials (`Eve-Malicious`).
@@ -268,22 +283,23 @@ Test the deterministic defense engine by safely injecting simulated attacks agai
 - **Quantum Channel Noise**: Injects simulated depolarizing quantum noise ($p \in [0.01, 0.50]$).
 - **Tampering Attack**: Modifies the message payload after signature generation.
 
-### 5. Quantum State & Bloch Sphere Visualizer
+### 7. Automated Parameter Sweeps & Benchmarks
+Dedicated `/experiments` view for running reproducible research parameter sweeps:
+- Compare **NumPy vs Qiskit Aer** runtimes and output consistency across different shot counts ($100 \to 5000$).
+- Sweep depolarizing channel noise ($p = 0.00 \to 0.40$) and observe threshold crossings.
+- Multi-trial attack scenario sweeps measuring True Positive and False Positive rates.
+
+### 8. Quantum State & Bloch Sphere Visualizer
 - Visual 3D spherical coordinate representation ($\theta, \phi$) for single-qubit states.
 - Displays complex amplitude coordinates $(\alpha, \beta)$ where $|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$.
 - Visual breakdown of Pauli eigenvectors along $Z$, $X$, and $Y$ axes.
 
-### 6. Benchmark Analytics & Performance Metrics
-- **Performance Evaluation Table**: Verification Accuracy ($100\%$), True Positive Rate ($100\%$), False Positive Rate ($0\%$), False Negative Rate ($0\%$).
-- **Shot Convergence Analysis**: Visual chart showing how increasing shot counts ($100 \to 10,000$) narrows the Wilson score confidence interval width.
-- **Attack Vector Comparison Matrix**: Side-by-side comparison of error rates across all 5 attack types.
-
-### 7. Security Incident Alert Center
+### 9. Security Incident Alert Center
 - Real-time incident logs generated upon attack detection.
 - Severity tagging (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`).
 - Incident lifecycle management: update status between `TRIGGERED`, `INVESTIGATING`, and `RESOLVED`.
 
-### 8. 1-Click Automated Research Demonstration
+### 10. 1-Click Automated Research Demonstration
 Click **"Run Complete Demo"** in the top navigation bar to trigger an end-to-end automated research workflow:
 1. Prepares classical message `"Authorize payment ₹50,000 to Vendor B"`.
 2. Generates classical SHA-256 message digest and nonce.
@@ -302,6 +318,8 @@ Click **"Run Complete Demo"** in the top navigation bar to trigger an end-to-end
 
 ## 🏗️ High-Level System Architecture
 
+For full architectural blueprints, see [docs/architecture.md](file:///docs/architecture.md).
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                   RESEARCHER / OPERATOR (BROWSER)                      │
@@ -311,8 +329,9 @@ Click **"Run Complete Demo"** in the top navigation bar to trigger an end-to-end
 ┌────────────────────────────────────────────────────────────────────────┐
 │             REACT + VITE + TYPESCRIPT FRONTEND LAYER                   │
 │  - Dashboard & Charts (Recharts)       - Attack Simulator              │
-│  - QDS Teleportation Circuit Tracing   - Analytics & Benchmarks        │
+│  - QDS Teleportation Circuit Tracing   - Experiments & Benchmarks      │
 │  - Deterministic Verification Center   - Incident Alerts & Settings    │
+│  - Qiskit Circuit & QASM Visualizer    - Bloch Sphere State Viewer     │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ REST API (JSON / HTTP)
                                     ▼
@@ -320,10 +339,10 @@ Click **"Run Complete Demo"** in the top navigation bar to trigger an end-to-end
 │                   FASTAPI PYTHON BACKEND LAYER                         │
 │                                                                        │
 │  ┌─────────────────────────────┐    ┌───────────────────────────────┐  │
-│  │    Quantum State Engine     │    │   Statistical Math Engine     │  │
-│  │  - NumPy 2^n Statevectors   │    │  - Born Rule Measurement      │  │
-│  │  - Bell State Entanglement  │    │  - Empirical Error Rate (E)   │  │
-│  │  - 3-Qubit Teleportation    │    │  - Wilson Score 95% CI        │  │
+│  │   Pluggable Quantum Layer   │    │   Statistical Math Engine     │  │
+│  │  - NumPy 2^n Statevector    │    │  - Born Rule Measurement      │  │
+│  │  - IBM Qiskit 1.3+ / Aer    │    │  - Empirical Error Rate (E)   │  │
+│  │  - OpenQASM 3.0 Exporter    │    │  - Wilson Score 95% CI        │  │
 │  │  - Pauli Unitary Correction │    │  - Binomial Likelihood P_forge│  │
 │  └─────────────────────────────┘    └───────────────────────────────┘  │
 │                 │                                  │                   │
@@ -345,7 +364,7 @@ Click **"Run Complete Demo"** in the top navigation bar to trigger an end-to-end
 │                 SQLITE DATABASE / PERSISTENCE LAYER                    │
 │  - users                    - signatures            - measurements     │
 │  - verification_sessions    - attacks               - alerts           │
-│  - audit_logs               - system_settings                          │
+│  - experiments              - experiment_trials     - audit_logs       │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -357,6 +376,7 @@ Click **"Run Complete Demo"** in the top navigation bar to trigger an end-to-end
 Digi_Signature/
 ├── .gitignore
 ├── README.md                          # Comprehensive project documentation
+├── PROJECT_REPORT.md                  # Conceptual & friendly deep-dive project report
 ├── docker-compose.yml                 # Multi-container orchestration (Backend + Frontend)
 ├── docs/                              # Detailed scientific & technical specifications
 │   ├── api.md                         # REST API endpoint reference
@@ -367,7 +387,7 @@ Digi_Signature/
 │   └── threat-model.md                # Threat vectors & deterministic rule trees
 ├── backend/
 │   ├── Dockerfile                     # Backend container image definition
-│   ├── requirements.txt               # Python dependencies (FastAPI, NumPy, SciPy, etc.)
+│   ├── requirements.txt               # Python dependencies (FastAPI, Qiskit, NumPy, SciPy)
 │   ├── .env.example                   # Environment configuration template
 │   ├── app/
 │   │   ├── main.py                    # FastAPI application initialization & lifespan
@@ -378,11 +398,13 @@ Digi_Signature/
 │   │   │   ├── audit.py               # Immutable audit log access
 │   │   │   ├── dashboard.py           # Real-time telemetry & KPI aggregations
 │   │   │   ├── demo.py                # 12-step automated demo runner
+│   │   │   ├── experiments.py         # Automated parameter sweeps & benchmark API
 │   │   │   ├── quantum.py             # Statevector, Bell states & teleportation
 │   │   │   ├── settings.py            # Dynamic threshold configuration
 │   │   │   ├── signatures.py          # QDS generation & management
 │   │   │   └── verification.py        # Deterministic verification execution
 │   │   ├── core/
+│   │   │   ├── auth.py                # JWT & API Key authentication filters
 │   │   │   ├── config.py              # App settings & environment variables
 │   │   │   └── security.py            # SHA-256 hashing & cryptographic nonces
 │   │   ├── database/
@@ -392,12 +414,17 @@ Digi_Signature/
 │   │   │   ├── alert.py
 │   │   │   ├── attack.py
 │   │   │   ├── audit.py
+│   │   │   ├── experiment.py          # Batch parameter sweep runs & trial logs
 │   │   │   ├── measurement.py
 │   │   │   ├── setting.py
 │   │   │   ├── signature.py
 │   │   │   ├── user.py
 │   │   │   └── verification.py
-│   │   ├── quantum/                   # Pure NumPy quantum statevector simulator
+│   │   ├── quantum/                   # Pluggable quantum simulation backends
+│   │   │   ├── backend.py             # Abstract QuantumBackend interface
+│   │   │   ├── factory.py             # QuantumBackendFactory (NumPy vs Qiskit)
+│   │   │   ├── numpy_backend.py       # NumPy analytical statevector backend
+│   │   │   ├── qiskit_backend.py      # Qiskit 1.3+ AerSimulator backend
 │   │   │   ├── bell_states.py         # 4 Maximally entangled EPR Bell states
 │   │   │   ├── gates.py               # Unitary gates (I, X, Y, Z, H, S, T, CNOT)
 │   │   │   ├── measurement.py         # Born rule projective measurement engine
@@ -408,6 +435,7 @@ Digi_Signature/
 │   │   ├── schemas/                   # Pydantic v2 validation schemas
 │   │   │   ├── alert.py
 │   │   │   ├── attack.py
+│   │   │   ├── experiment.py
 │   │   │   ├── quantum.py
 │   │   │   ├── signature.py
 │   │   │   └── verification.py
@@ -415,15 +443,18 @@ Digi_Signature/
 │   │       ├── attack_service.py      # Controlled cyber attack simulation
 │   │       ├── audit_service.py       # Security audit event logging
 │   │       ├── demo_service.py        # 1-Click end-to-end demo runner
+│   │       ├── experiment_service.py  # Parameter sweep batch runner
 │   │       ├── qds_service.py         # QDS generation & lifecycle management
 │   │       ├── statistics_service.py  # Wilson score CI & Bayesian likelihood
 │   │       ├── threat_detection_service.py # Deterministic rule engine
 │   │       └── verification_service.py # Verification workflow coordinator
-│   └── tests/                         # Pytest test suite (17 comprehensive tests)
+│   └── tests/                         # Pytest test suite (38 comprehensive tests)
+│       ├── conftest.py
 │       ├── test_api.py
-│       ├── test_attacks.py
-│       ├── test_quantum.py
-│       └── test_verification.py
+│       ├── test_backend_comparison.py # NumPy vs Qiskit consistency tests
+│       ├── test_experiments.py        # Automated parameter sweep tests
+│       ├── test_quantum.py            # Unitary gates & teleportation tests
+│       └── test_threat_detection.py   # Deterministic rules & attacks tests
 └── frontend/
     ├── Dockerfile                     # Frontend static build container
     ├── package.json                   # React 18, Vite, Lucide, Recharts dependencies
@@ -437,6 +468,7 @@ Digi_Signature/
         │   ├── BlochSphereView.tsx    # 3D spherical coordinate visualizer
         │   ├── DemoModal.tsx          # 12-Step automated demo modal
         │   ├── Navbar.tsx             # Header navigation bar & live status
+        │   ├── QiskitCircuitModal.tsx # Interactive Qiskit circuit & QASM modal
         │   └── QuantumCircuitView.tsx # Visual 3-qubit circuit diagram
         ├── pages/                     # Full application views
         │   ├── Alerts.tsx             # Incident response & alert triage
@@ -444,7 +476,7 @@ Digi_Signature/
         │   ├── Attacks.tsx            # Attack injection testing interface
         │   ├── AuditLogs.tsx          # Immutable audit event log
         │   ├── Dashboard.tsx          # Central operational telemetry dashboard
-        │   ├── Experiments.tsx        # Benchmarking experiments
+        │   ├── Experiments.tsx        # Benchmarking experiments & parameter sweeps
         │   ├── MeasurementAnalysis.tsx# Measurement distribution analyzer
         │   ├── Settings.tsx           # Dynamic threshold parameter tuning
         │   ├── Simulator.tsx          # Interactive teleportation protocol builder
@@ -460,7 +492,7 @@ Digi_Signature/
 
 ## 📡 REST API Reference
 
-The backend exposes a fully documented OpenAPI / Swagger interface at `http://localhost:8000/docs`.
+The backend exposes an interactive OpenAPI / Swagger interface at `http://localhost:8000/docs`.
 
 ### Key API Endpoints Summary:
 
@@ -470,15 +502,19 @@ The backend exposes a fully documented OpenAPI / Swagger interface at `http://lo
 | | `GET` | `/api/signatures` | List signatures with pagination and status filters. |
 | | `GET` | `/api/signatures/{id}` | Retrieve complete signature details and quantum parameters. |
 | **Quantum** | `GET` | `/api/quantum/states` | List supported single-qubit Pauli eigenstates. |
-| | `GET` | `/api/quantum/bell-states` | List 4 standard EPR Bell states ($|\Phi^+\rangle, |\Phi^-\rangle, |\Psi^+\rangle, |\Psi^-\rangle$). |
+| | `GET` | `/api/quantum/bell-states` | List 4 standard EPR Bell states. |
 | | `POST` | `/api/quantum/bell-state` | Generate Bell state and return step-by-step statevectors. |
-| | `POST` | `/api/quantum/teleport` | Execute 3-qubit teleportation with Bob's Pauli correction. |
+| | `POST` | `/api/quantum/teleport` | Execute 3-qubit teleportation (select NumPy or Qiskit backend). |
 | | `POST` | `/api/quantum/measure` | Perform projective measurements across $Z, X, Y$ bases. |
+| | `GET` | `/api/quantum/circuit-diagram` | Render ASCII circuit and OpenQASM 3.0 string. |
 | **Verification** | `POST` | `/api/verification/start` | Run deterministic statistical verification on a signature. |
 | | `GET` | `/api/verification` | List all historical verification sessions. |
 | | `GET` | `/api/verification/{id}` | Get verification details, error rate, Wilson CI & rule reasoning. |
 | **Attacks** | `POST` | `/api/attacks/simulate` | Safely inject cyber attacks (Forgery, Replay, Impersonation, Noise). |
 | | `GET` | `/api/attacks` | List all simulated attack experiments. |
+| **Experiments** | `POST` | `/api/experiments/run` | Run parameter sweeps across states, noise, shots, and backends. |
+| | `GET` | `/api/experiments` | List historical parameter sweep runs. |
+| | `GET` | `/api/experiments/{id}` | Fetch detailed experiment trial statistics and charts. |
 | **Dashboard** | `GET` | `/api/dashboard/summary` | Get aggregated KPI counts and system health metrics. |
 | | `GET` | `/api/dashboard/threat-distribution` | Aggregated threat counts by category. |
 | | `GET` | `/api/dashboard/timeline` | Time-series error rates and threshold boundaries. |
@@ -489,7 +525,7 @@ The backend exposes a fully documented OpenAPI / Swagger interface at `http://lo
 | **Settings** | `GET` | `/api/settings` | Read dynamic security thresholds ($T_{\text{low}}, T_{\text{high}}, N_{\text{shots}}$). |
 | | `PUT` | `/api/settings/{key}` | Update specific configuration parameter. |
 | | `POST` | `/api/settings/reset` | Reset all parameters to factory defaults. |
-| **Automated Demo** | `POST` | `/api/demo/run-complete` | Trigger the complete 12-step research demonstration. |
+| **Automated Demo**| `POST` | `/api/demo/run-complete` | Trigger the complete 12-step research demonstration. |
 
 ---
 
@@ -501,19 +537,9 @@ The backend exposes a fully documented OpenAPI / Swagger interface at `http://lo
 | **Attack Detection Rate (TPR)** | $\frac{\text{Detected Attacks}}{\text{Total Injected Attacks}}$ | **100%** | Optimal |
 | **False Positive Rate (FPR)** | $\frac{\text{False Rejections}}{\text{Total Legitimate Signatures}}$ | **0%** | Zero False Alarms |
 | **False Negative Rate (FNR)** | $\frac{\text{Missed Attacks}}{\text{Total Attacks}}$ | **0%** | Zero Breaches |
-| **Average Backend Verification Latency** | Processing duration per $1000$-shot session | **~2.3 ms** | Ultra-Low Latency |
+| **Average NumPy Backend Latency** | Duration per $1000$-shot session | **~2.3 ms** | Ultra-Low Latency |
+| **Average Qiskit Aer Backend Latency**| Duration per $1000$-shot circuit execution | **~14.5 ms** | Standard Compliant |
 | **Quantum Teleportation State Fidelity** | $\mathcal{F} = |\langle\psi_{\text{in}}|\psi_{\text{out}}\rangle|^2$ | **1.0000** | Exact Simulation |
-
-### Empirical Attack Vector Comparison:
-
-| Threat Vector | Injected Error Rate | Observed Error Rate ($E$) | Wilson 95% Confidence Interval | Likelihood $P_{\text{forge}}$ | Triggered Rule | Final Decision |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Legitimate Signature** | $0.0\%$ | $1.9\%$ | $[1.22\%, 2.95\%]$ | $< 0.02\%$ | **RULE 6** | **VERIFIED** |
-| **Signature Forgery** | $50.0\%$ | $49.6\%$ | $[46.5\%, 52.7\%]$ | $> 99.99\%$ | **RULE 4** | **REJECTED** |
-| **Signer Impersonation** | $0.0\%$ | $2.0\%$ | $[1.30\%, 3.07\%]$ | $< 0.02\%$ | **RULE 1** | **REJECTED** |
-| **Nonce Replay Attack** | $0.0\%$ | $2.1\%$ | $[1.38\%, 3.19\%]$ | $< 0.02\%$ | **RULE 3** | **REJECTED** |
-| **Elevated Noise ($p=25\%$)**| $25.0\%$ | $24.8\%$ | $[22.2\%, 27.5\%]$ | $98.40\%$ | **RULE 4** | **REJECTED** |
-| **Channel Noise ($p=8\%$)** | $8.0\%$ | $8.2\%$ | $[6.65\%, 10.05\%]$ | $12.50\%$ | **RULE 5** | **SUSPICIOUS** |
 
 ---
 
@@ -548,7 +574,7 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run test suite
+# Run test suite (38 tests)
 python -m pytest tests -v
 
 # Start FastAPI backend server
@@ -588,7 +614,7 @@ docker-compose up --build
 
 ## ✅ Verification & Unit Testing Suite
 
-The repository includes a comprehensive unit and integration test suite with 17 tests validating quantum mechanics, statistical interval calculations, deterministic threat rules, and REST API routes.
+The repository includes a comprehensive unit and integration test suite with **38 tests** validating quantum mechanics, statistical interval calculations, deterministic threat rules, dual quantum backend consistency, and REST API routes.
 
 ```bash
 cd backend
@@ -596,19 +622,11 @@ python -m pytest tests -v
 ```
 
 ### Test Suite Coverage:
-- `test_quantum.py`:
-  - Validates unitary properties of $X, Y, Z, H, S, T, CNOT$ gates.
-  - Verifies Bell state entanglement and concurrence $C = 1.0$.
-  - Asserts quantum teleportation fidelity $\mathcal{F} = 1.0000$ across all 6 Pauli eigenstates.
-  - Validates projective measurement Born rule probability distributions.
-- `test_verification.py`:
-  - Tests Wilson score 95% confidence interval calculations and bounds.
-  - Tests binomial likelihood ratio forgery probability calculations.
-  - Validates deterministic threshold boundaries ($T_{\text{low}} = 0.05, T_{\text{high}} = 0.15$).
-- `test_attacks.py`:
-  - Verifies deterministic catch rate for Forgery, Impersonation, Replay, and Noise injection.
-- `test_api.py`:
-  - Validates all REST API endpoints, response schemas, and error handlers.
+- `test_quantum.py`: Unitary properties of gates, Bell state concurrence, 3-qubit teleportation fidelity ($\mathcal{F} = 1.0$), and Born rule projective distributions.
+- `test_backend_comparison.py`: Cross-validates `NumPyBackend` vs `QiskitBackend` output consistency, gate translations, and circuit diagrams.
+- `test_experiments.py`: Validates automated parameter sweeps, noise stepping, and statistical persistence.
+- `test_threat_detection.py`: Verifies deterministic catch rate for Forgery, Impersonation, Replay, Tampering, and Channel Noise.
+- `test_api.py`: Validates all FastAPI endpoints, response schemas, and error handlers.
 
 ---
 

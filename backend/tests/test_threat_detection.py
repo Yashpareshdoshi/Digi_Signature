@@ -62,3 +62,14 @@ def test_legitimate_verified():
     )
     assert eval_res["decision"] == "VERIFIED"
     assert eval_res["threat_detected"] == "NONE"
+
+def test_message_tampering_detection():
+    eval_res = ThreatDetectionService.evaluate_signature_security(
+        identity_valid=True,
+        nonce_already_consumed=False,
+        message_hash_match=False, # Digest mismatch
+        error_rate=0.01
+    )
+    assert eval_res["decision"] == "REJECTED"
+    assert eval_res["threat_detected"] == "MESSAGE_TAMPERING"
+    assert eval_res["severity"] == "CRITICAL"

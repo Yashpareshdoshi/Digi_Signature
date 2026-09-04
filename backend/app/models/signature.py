@@ -16,6 +16,9 @@ class Signature(Base):
     nonce = Column(String(64), unique=True, index=True, nullable=False)
     nonce_consumed = Column(Integer, default=0, nullable=False) # 1 if used in verification
     status = Column(String(32), default="GENERATED", nullable=False) # GENERATED, VERIFIED, SUSPICIOUS, REJECTED, ATTACKED
+    teleport_bits = Column(String(8), nullable=True) # e.g. "00", "01", "10", "11"
+    pauli_correction = Column(String(16), nullable=True) # e.g. "I", "X", "Z", "ZX (or -iY)"
+    teleport_fidelity = Column(Float, default=1.0, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     measurements = relationship("Measurement", back_populates="signature", cascade="all, delete-orphan")

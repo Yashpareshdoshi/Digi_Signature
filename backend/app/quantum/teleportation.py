@@ -159,6 +159,7 @@ def simulate_teleportation(
         "pauli_correction": pauli_correction_name,
         "input_state": input_state.to_dict(),
         "recovered_state": recovered_state.to_dict(),
+        "recovered_statevector": recovered_state,
         "fidelity": float(teleportation_fidelity),
         "steps": steps
     }

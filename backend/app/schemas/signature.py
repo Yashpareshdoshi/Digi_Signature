@@ -21,6 +21,9 @@ class SignatureResponse(BaseModel):
     nonce: str
     nonce_consumed: int
     status: str
+    teleport_bits: Optional[str] = None
+    pauli_correction: Optional[str] = None
+    teleport_fidelity: Optional[float] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

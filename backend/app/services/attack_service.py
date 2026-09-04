@@ -48,19 +48,37 @@ class AttackService:
 
         # Configure verification simulation parameters per attack
         if attack_type == "SIGNATURE_FORGERY":
-            # Forgery produces high quantum measurement error (e.g. ~48-52%)
-            params["forgery_method"] = "Random Basis Guessing / State Manipulation"
-            params["simulated_noise"] = 0.85
+            # Forgery mechanism: Attacker does not know Alice's private basis/state.
+            # Injects a conjugate/orthogonal state (e.g. |+> when Alice prepared |0>),
+            # causing ~50% measurement error naturally from the quantum Born rule / Aer simulator.
+            forged_state = "|+>" if sig.quantum_state in ("|0>", "|1>") else "|0>"
+            params["forgery_method"] = f"Fabricated Quantum State Injection ({forged_state} instead of {sig.quantum_state})"
+            params["forged_quantum_state"] = forged_state
+
             v_result = VerificationService.verify_signature(
                 db=db,
                 signature_id=sig.signature_id,
                 verifier_id="Verifier-Bob",
                 shots=shots,
-                noise_rate=0.85 # High error rate
+                forged_quantum_state=forged_state,
+                noise_rate=0.0 # Genuine quantum state mismatch produces the error naturally!
             )
             detected = 1 if v_result["session"].decision == "REJECTED" else 0
             severity = "HIGH"
-            reason = f"Simulated quantum signature forgery yielded {v_result['statistical_details']['error_rate_percentage']}% measurement error, exceeding rejection threshold."
+            reason = f"Quantum signature forgery detected: Fabricated state '{forged_state}' produced {v_result['statistical_details']['error_rate_percentage']}% measurement error in Alice's eigenbasis."
+
+        elif attack_type in ("INTERCEPT_RESEND", "EAVESDROPPING"):
+            params["attack_mechanism"] = "Eve intercept-resend measurement disturbance on flying qubit"
+            v_result = VerificationService.verify_signature(
+                db=db,
+                signature_id=sig.signature_id,
+                verifier_id="Verifier-Bob",
+                shots=shots,
+                intercept_resend=True
+            )
+            detected = 1 if v_result["session"].decision in ("SUSPICIOUS", "REJECTED") else 0
+            severity = "HIGH" if v_result["session"].decision == "REJECTED" else "MEDIUM"
+            reason = f"Intercept-resend eavesdropping detected: Wave-function collapse produced {v_result['statistical_details']['error_rate_percentage']}% measurement disturbance."
 
         elif attack_type == "IMPERSONATION":
             params["forged_signer_identity"] = forged_signer
@@ -114,6 +132,21 @@ class AttackService:
             detected = 1 if v_result["session"].decision == "REJECTED" else 0
             severity = "HIGH"
             reason = "Unauthorized verifier identity and mismatched signer registry."
+
+        elif attack_type in ("MESSAGE_TAMPERING", "TAMPERING"):
+            tampered_msg = f"{sig.message} [UNAUTHORIZED_MODIFICATION]"
+            params["tampered_message"] = tampered_msg
+            params["original_message"] = sig.message
+            v_result = VerificationService.verify_signature(
+                db=db,
+                signature_id=sig.signature_id,
+                verifier_id="Verifier-Bob",
+                custom_message=tampered_msg,
+                shots=shots
+            )
+            detected = 1 if v_result["session"].decision == "REJECTED" else 0
+            severity = "CRITICAL"
+            reason = "Classical message tampering detected: Recalculated SHA-256 digest does not match signature record."
 
         else:
             raise ValueError(f"Unknown attack type: {attack_type}")

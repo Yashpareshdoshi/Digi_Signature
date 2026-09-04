@@ -9,6 +9,9 @@ export interface Signature {
   nonce: string;
   nonce_consumed: number;
   status: 'GENERATED' | 'VERIFIED' | 'SUSPICIOUS' | 'REJECTED' | 'ATTACKED';
+  teleport_bits?: string;
+  pauli_correction?: string;
+  teleport_fidelity?: number;
   created_at: string;
 }
 
@@ -51,6 +54,9 @@ export interface TeleportationResult {
   recovered_state: StatevectorData;
   fidelity: number;
   steps: QuantumStep[];
+  qiskit_circuit_diagram?: string;
+  openqasm3?: string;
+  backend?: string;
 }
 
 export interface MeasurementSample {
@@ -90,6 +96,7 @@ export interface StatisticalDetails {
   confidence_lower: number;
   confidence_upper: number;
   confidence_interval_text: string;
+  likelihood_anomaly_score?: number;
   forgery_probability: number;
   forgery_probability_percentage: number;
   p_value_legitimate: number;

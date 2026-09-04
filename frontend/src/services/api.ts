@@ -126,6 +126,14 @@ export const api = {
     fetchJSON(`/settings/${key}`, { method: 'PUT', body: JSON.stringify({ key, value, description }) }),
   resetSettings: (): Promise<SystemSetting[]> => fetchJSON('/settings/reset', { method: 'POST' }),
 
+  // Experiments & Quantum Circuits
+  getCircuitDiagram: (quantum_state = '|0>', bell_state = 'Phi+'): Promise<{ status: string; backend: string; diagram: string }> =>
+    fetchJSON(`/quantum/circuit-diagram?quantum_state=${encodeURIComponent(quantum_state)}&bell_state=${encodeURIComponent(bell_state)}`),
+  runExperiment: (payload: any): Promise<any> =>
+    fetchJSON('/experiments/run', { method: 'POST', body: JSON.stringify(payload) }),
+  listExperiments: (): Promise<any[]> =>
+    fetchJSON('/experiments'),
+
   // Demo
   runCompleteDemo: (params?: {
     message?: string;

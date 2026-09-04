@@ -100,20 +100,34 @@ export const Experiments: React.FC = () => {
   const handleRunExperiment = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/analytics/experiments/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shots,
-          noise_rate: noise,
-          attack_scenario: scenario,
-          intensity,
-          quantum_state: '|0>',
-          basis: 'Z',
-        }),
+      const exp = await api.runExperiment({
+        name: `Parameter Sweep (${shots} shots, ${(noise * 100).toFixed(0)}% noise)`,
+        description: `Scenario: ${scenario}`,
+        states: [scenario === 'FORGERY' ? '|1>' : '|0>'],
+        bases: ['Z'],
+        shots_list: [shots],
+        noise_levels: [scenario === 'CHANNEL_MANIPULATION' ? noise : 0.0],
+        trials_per_config: 1,
+        backend_name: 'numpy',
       });
-      const data = await res.json();
-      setResults((prev) => [data, ...prev]);
+
+      if (exp.trials && exp.trials.length > 0) {
+        const mapped = exp.trials.map((t: any) => ({
+          scenario: scenario,
+          shots: t.shots,
+          noise_applied_pct: Number((t.noise_rate * 100).toFixed(1)),
+          unexpected_outcomes: Math.round(t.error_rate * t.shots),
+          error_rate_pct: Number((t.error_rate * 100).toFixed(2)),
+          ci_lower_pct: Number((t.confidence_lower * 100).toFixed(2)),
+          ci_upper_pct: Number((t.confidence_upper * 100).toFixed(2)),
+          forgery_probability_pct: t.error_rate > 0.15 ? 99.9 : (t.error_rate > 0.05 ? 65.0 : 0.01),
+          decision: t.decision,
+          threat_detected: t.threat_detected,
+          rule_triggered: t.threat_detected !== 'NONE' ? `RULE_${t.threat_detected}` : 'RULE_6_VERIFIED_LEGITIMATE',
+          latency_ms: Number(t.latency_ms.toFixed(1)),
+        }));
+        setResults((prev) => [...mapped, ...prev]);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -125,22 +139,35 @@ export const Experiments: React.FC = () => {
     try {
       setLoading(true);
       const scenarios = ['LEGITIMATE', 'FORGERY', 'REPLAY', 'IMPERSONATION', 'CHANNEL_MANIPULATION'];
-      const batchResults = [];
+      const batchResults: ExperimentResult[] = [];
       for (const sc of scenarios) {
-        const res = await fetch('/api/analytics/experiments/run', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            shots,
-            noise_rate: noise,
-            attack_scenario: sc,
-            intensity,
-            quantum_state: '|0>',
-            basis: 'Z',
-          }),
+        const exp = await api.runExperiment({
+          name: `Batch Benchmark: ${sc}`,
+          description: `Scenario: ${sc}`,
+          states: [sc === 'FORGERY' ? '|1>' : '|0>'],
+          bases: ['Z'],
+          shots_list: [shots],
+          noise_levels: [sc === 'CHANNEL_MANIPULATION' ? noise : 0.0],
+          trials_per_config: 1,
+          backend_name: 'numpy',
         });
-        const data = await res.json();
-        batchResults.push(data);
+        if (exp.trials && exp.trials.length > 0) {
+          const t = exp.trials[0];
+          batchResults.push({
+            scenario: sc,
+            shots: t.shots,
+            noise_applied_pct: Number((t.noise_rate * 100).toFixed(1)),
+            unexpected_outcomes: Math.round(t.error_rate * t.shots),
+            error_rate_pct: Number((t.error_rate * 100).toFixed(2)),
+            ci_lower_pct: Number((t.confidence_lower * 100).toFixed(2)),
+            ci_upper_pct: Number((t.confidence_upper * 100).toFixed(2)),
+            forgery_probability_pct: t.error_rate > 0.15 ? 99.9 : (t.error_rate > 0.05 ? 65.0 : 0.01),
+            decision: t.decision,
+            threat_detected: t.threat_detected,
+            rule_triggered: t.threat_detected !== 'NONE' ? `RULE_${t.threat_detected}` : 'RULE_6_VERIFIED_LEGITIMATE',
+            latency_ms: Number(t.latency_ms.toFixed(1)),
+          });
+        }
       }
       setResults(batchResults);
     } catch (err) {

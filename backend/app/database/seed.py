@@ -1,6 +1,6 @@
 import random
 from datetime import datetime, timedelta
-from app.database.database import SessionLocal, engine, Base
+from app.database.database import SessionLocal, engine, Base, init_and_upgrade_db
 from app.models.user import User
 from app.models.signature import Signature
 from app.models.measurement import Measurement
@@ -32,38 +32,41 @@ SAMPLE_MESSAGES = [
 
 def seed_database():
     """Populates SQLite database with comprehensive initial data."""
-    Base.metadata.create_all(bind=engine)
+    init_and_upgrade_db()
     db = SessionLocal()
 
-    # Check if already seeded
-    if db.query(Signature).count() >= 5:
-        print("Database already contains seed data. Skipping seed.")
-        db.close()
-        return
-
-    print("Seeding database with realistic Quantum Digital Signature data...")
-
-    # 1. Seed Users
+    # 1. Always Ensure Users with Prototype API Keys Exist
     users_data = [
-        ("Signer-Alice", "Signer"),
-        ("Signer-Charlie", "Signer"),
-        ("Verifier-Bob", "Verifier"),
-        ("Verifier-Dave", "Verifier"),
-        ("Auditor-Eve", "Auditor"),
-        ("Admin-Security", "Admin")
+        ("Signer-Alice", "Signer", "SIG-KEY-ALICE-101"),
+        ("Signer-Charlie", "Signer", "SIG-KEY-CHARLIE-102"),
+        ("Verifier-Bob", "Verifier", "VER-KEY-BOB-202"),
+        ("Verifier-Dave", "Verifier", "VER-KEY-DAVE-203"),
+        ("Auditor-Eve", "Auditor", "AUD-KEY-EVE-555"),
+        ("Admin-Security", "Admin", "ADM-KEY-ROOT-999")
     ]
-    for username, role in users_data:
-        if not db.query(User).filter(User.username == username).first():
-            db.add(User(username=username, role=role, is_active=True))
+    for username, role, key in users_data:
+        existing_u = db.query(User).filter(User.username == username).first()
+        if not existing_u:
+            db.add(User(username=username, role=role, api_key=key, is_active=True))
+        elif not existing_u.api_key:
+            existing_u.api_key = key
     db.commit()
 
-    # 2. Seed System Settings
+    # 2. Always Ensure System Settings Exist
     for s in DEFAULT_SETTINGS:
         if not db.query(SystemSetting).filter(SystemSetting.key == s["key"]).first():
             db.add(SystemSetting(key=s["key"], value=s["value"], description=s["description"]))
     db.commit()
 
-    # 3. Create 12 Initial Signatures
+    # 3. Check if signatures already seeded
+    if db.query(Signature).count() >= 5:
+        print("Database already contains seed signatures. Skipping signature generation.")
+        db.close()
+        return
+
+    print("Seeding database with realistic Quantum Digital Signature data...")
+
+    # 4. Create 12 Initial Signatures
     created_sigs = []
     bell_states = ["Phi+", "Phi-", "Psi+", "Psi-"]
     quantum_states = ["|0>", "|1>", "|+>", "|->", "|+i>", "|-i>"]

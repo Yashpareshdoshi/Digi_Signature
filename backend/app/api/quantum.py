@@ -36,8 +36,10 @@ def create_bell_state(payload: BellStateRequest):
 def run_teleportation(payload: TeleportRequest):
     """Simulate complete 3-qubit Quantum Teleportation circuit with Pauli correction."""
     try:
-        input_state = get_pauli_eigenstate(payload.quantum_state)
-        res = simulate_teleportation(
+        from app.quantum.factory import get_quantum_backend
+        backend = get_quantum_backend()
+        input_state = backend.get_pauli_state(payload.quantum_state)
+        res = backend.teleport(
             input_state=input_state,
             bell_state_name=payload.bell_state,
             force_measurement_bits=payload.force_measurement_bits
@@ -50,8 +52,10 @@ def run_teleportation(payload: TeleportRequest):
 def run_measurement(payload: MeasureRequest):
     """Perform projective measurements across Z, X, or Y basis with configurable shots and noise."""
     try:
-        state = get_pauli_eigenstate(payload.quantum_state)
-        res = sample_projective_measurements(
+        from app.quantum.factory import get_quantum_backend
+        backend = get_quantum_backend()
+        state = backend.get_pauli_state(payload.quantum_state)
+        res = backend.measure(
             state=state,
             basis=payload.basis,
             shots=payload.shots,
@@ -60,3 +64,21 @@ def run_measurement(payload: MeasureRequest):
         return res
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/circuit-diagram")
+def get_circuit_diagram(quantum_state: str = "|0>", bell_state: str = "Phi+"):
+    """Returns ASCII diagram and OpenQASM representation of the teleportation circuit."""
+    try:
+        from app.quantum.factory import get_quantum_backend
+        backend = get_quantum_backend("qiskit")
+        if hasattr(backend, "get_circuit_diagram"):
+            diagram = backend.get_circuit_diagram(quantum_state, bell_state)
+            return {"status": "success", "backend": backend.name, "diagram": diagram}
+        else:
+            return {
+                "status": "fallback",
+                "backend": "numpy",
+                "diagram": "Qiskit not installed. Using pure NumPy linear algebra simulator."
+            }
+    except Exception as e:
+        return {"status": "error", "error": str(e)}

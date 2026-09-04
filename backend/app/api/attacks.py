@@ -5,10 +5,11 @@ from app.database.database import get_db
 from app.models.attack import Attack
 from app.schemas.attack import AttackSimulateRequest, AttackResponse, AttackDetailResponse
 from app.services.attack_service import AttackService
+from app.core.auth import require_roles
 
 router = APIRouter(prefix="/attacks", tags=["Attacks"])
 
-@router.post("/simulate", response_model=AttackDetailResponse)
+@router.post("/simulate", response_model=AttackDetailResponse, dependencies=[Depends(require_roles(["Admin", "Verifier"]))])
 def simulate_attack(payload: AttackSimulateRequest, db: Session = Depends(get_db)):
     """Simulate a cyber attack against a quantum digital signature and evaluate threat response."""
     try:

@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
-from app.database.database import engine, Base
+from app.database.database import engine, Base, init_and_upgrade_db
 from app.database.seed import seed_database
-from app.api import signatures, quantum, verification, attacks, alerts, dashboard, settings as settings_api, analytics, demo, audit
+from app.api import signatures, quantum, verification, attacks, alerts, dashboard, settings as settings_api, analytics, demo, audit, experiments
 
 # Logging configuration
 logging.basicConfig(
@@ -18,8 +18,8 @@ logger = logging.getLogger("QDS-Security-Engine")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Initializing Quantum Digital Signature Database...")
-    Base.metadata.create_all(bind=engine)
+    logger.info("Initializing & Upgrading Quantum Digital Signature Database...")
+    init_and_upgrade_db()
     try:
         seed_database()
     except Exception as e:
@@ -85,6 +85,7 @@ app.include_router(settings_api.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
 app.include_router(demo.router, prefix=settings.API_V1_STR)
 app.include_router(audit.router, prefix=settings.API_V1_STR)
+app.include_router(experiments.router, prefix=settings.API_V1_STR)
 
 if __name__ == "__main__":
     import uvicorn

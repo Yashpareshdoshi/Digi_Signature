@@ -5,6 +5,7 @@ import { SignatureDetail, TeleportationResult, MeasurementResult } from '../type
 import { QuantumCircuitView } from '../components/QuantumCircuitView';
 import { BlochSphereView } from '../components/BlochSphereView';
 import { DecisionBadge } from '../components/DecisionBadge';
+import { QiskitCircuitModal } from '../components/QiskitCircuitModal';
 
 export const Simulator: React.FC = () => {
   const [message, setMessage] = useState('Transfer ₹5000 to Account X');
@@ -20,6 +21,7 @@ export const Simulator: React.FC = () => {
   const [teleportResult, setTeleportResult] = useState<TeleportationResult | null>(null);
   const [measurementResult, setMeasurementResult] = useState<MeasurementResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isQiskitModalOpen, setIsQiskitModalOpen] = useState(false);
 
   // Step 1: Generate Signature
   const handleGenerateSignature = async () => {
@@ -219,6 +221,14 @@ export const Simulator: React.FC = () => {
           <Activity className="w-4 h-4 text-emerald-400" />
           <span>Measure State Only</span>
         </button>
+
+        <button
+          onClick={() => setIsQiskitModalOpen(true)}
+          className="px-4 py-2.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 text-xs font-semibold flex items-center gap-2 border border-cyan-500/40 transition-all"
+        >
+          <Cpu className="w-4 h-4 text-cyan-400" />
+          <span>View Qiskit Circuit Diagram</span>
+        </button>
       </div>
 
       {error && (
@@ -258,6 +268,14 @@ export const Simulator: React.FC = () => {
               <div>
                 <span className="text-slate-500 block text-[10px]">Bell Entanglement</span>
                 <span className="text-cyan-300 font-semibold">|{signatureData.bell_state}⟩</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[10px]">Teleport Bits (b0,b1)</span>
+                <span className="text-purple-300 font-semibold">{signatureData.teleport_bits || teleportResult?.classical_bits || '00'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block text-[10px]">Pauli Correction</span>
+                <span className="text-amber-300 font-semibold">{signatureData.pauli_correction || teleportResult?.pauli_correction || 'I'}</span>
               </div>
               <div>
                 <span className="text-slate-500 block text-[10px]">Status</span>
@@ -371,6 +389,13 @@ export const Simulator: React.FC = () => {
           )}
         </div>
       </div>
+
+      <QiskitCircuitModal
+        isOpen={isQiskitModalOpen}
+        onClose={() => setIsQiskitModalOpen(false)}
+        quantumState={quantumState}
+        bellState={bellState}
+      />
     </div>
   );
 };

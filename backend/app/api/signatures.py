@@ -5,10 +5,11 @@ from app.database.database import get_db
 from app.models.signature import Signature
 from app.schemas.signature import SignatureCreateRequest, SignatureResponse, SignatureDetailResponse
 from app.services.qds_service import QDSService
+from app.core.auth import require_roles
 
 router = APIRouter(prefix="/signatures", tags=["Signatures"])
 
-@router.post("", response_model=SignatureDetailResponse)
+@router.post("", response_model=SignatureDetailResponse, dependencies=[Depends(require_roles(["Signer"]))])
 def create_signature(payload: SignatureCreateRequest, db: Session = Depends(get_db)):
     """Generate a simulated Quantum Digital Signature."""
     try:
@@ -22,6 +23,7 @@ def create_signature(payload: SignatureCreateRequest, db: Session = Depends(get_
             shots=payload.shots
         )
         sig = res["signature"]
+        teleport_data = {k: v for k, v in res["teleportation"].items() if k != "recovered_statevector"}
         return SignatureDetailResponse(
             id=sig.id,
             signature_id=sig.signature_id,
@@ -33,8 +35,11 @@ def create_signature(payload: SignatureCreateRequest, db: Session = Depends(get_
             nonce=sig.nonce,
             nonce_consumed=sig.nonce_consumed,
             status=sig.status,
+            teleport_bits=sig.teleport_bits,
+            pauli_correction=sig.pauli_correction,
+            teleport_fidelity=sig.teleport_fidelity,
             created_at=sig.created_at,
-            teleportation_data=res["teleportation"],
+            teleportation_data=teleport_data,
             measurement_summary=res["measurements"]
         )
     except Exception as e:

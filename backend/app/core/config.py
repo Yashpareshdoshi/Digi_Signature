@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     
     DEFAULT_BELL_STATE: str = "Phi+"
     DEFAULT_MEASUREMENT_BASIS: str = "Z"
+    QUANTUM_BACKEND: str = "numpy" # 'numpy' (default reference) or 'qiskit' (standard SDK)
 
     @field_validator("CORS_ORIGINS", mode="before")
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:

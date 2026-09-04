@@ -7,8 +7,8 @@ from app.core.security import compute_sha256, generate_session_id, generate_aler
 from app.models.signature import Signature
 from app.models.verification import VerificationSession
 from app.models.alert import Alert
-from app.quantum.pauli import get_pauli_eigenstate
-from app.quantum.measurement import sample_projective_measurements, get_expected_outcome
+from app.quantum.factory import get_quantum_backend
+from app.quantum.measurement import get_expected_outcome
 from app.services.statistics_service import analyze_measurement_statistics
 from app.services.threat_detection_service import ThreatDetectionService
 from app.services.audit_service import AuditService
@@ -24,6 +24,8 @@ class VerificationService:
         shots: int = 1000,
         noise_rate: float = 0.0,
         simulate_nonce_reuse: bool = False,
+        forged_quantum_state: Optional[str] = None,
+        intercept_resend: bool = False,
         low_threshold: Optional[float] = None,
         high_threshold: Optional[float] = None
     ) -> Dict[str, Any]:
@@ -58,13 +60,43 @@ class VerificationService:
         # Check 3: Nonce Consumption / Replay
         nonce_already_consumed = (sig.nonce_consumed == 1) or simulate_nonce_reuse
 
-        # Step 4: Quantum Measurement Simulation
-        quantum_state = get_pauli_eigenstate(sig.quantum_state)
+        # Step 4: Quantum Measurement Simulation over the Teleported Quantum Channel via Backend
+        backend = get_quantum_backend()
+
+        if forged_quantum_state:
+            # Attacker forged/injected a fabricated quantum state without the legitimate entangled key
+            quantum_state = backend.get_pauli_state(forged_quantum_state)
+        else:
+            input_state = backend.get_pauli_state(sig.quantum_state)
+            # Bob executes teleportation recovery using Alice's recorded classical bits
+            teleport_res = backend.teleport(
+                input_state=input_state,
+                bell_state_name=sig.bell_state or "Phi+",
+                force_measurement_bits=sig.teleport_bits
+            )
+            quantum_state = teleport_res.get("recovered_statevector") or backend.get_pauli_state(sig.quantum_state)
+
+            # Intercept-Resend attack: Eve intercepts and measures flying qubit, causing state collapse
+            if intercept_resend:
+                quantum_state, _ = backend.apply_channel_noise(
+                    state=quantum_state,
+                    noise_type="intercept_resend",
+                    noise_parameter=1.0
+                )
+
+            # Apply physical quantum channel noise (depolarizing / channel perturbation)
+            if noise_rate > 0.0:
+                quantum_state, _ = backend.apply_channel_noise(
+                    state=quantum_state,
+                    noise_type="depolarizing",
+                    noise_parameter=noise_rate
+                )
+
         # Default verification basis matches quantum state eigenbasis or Z
         basis = "Z" if sig.quantum_state in ("|0>", "|1>") else ("X" if sig.quantum_state in ("|+>", "|->") else "Y")
         expected_outcome = get_expected_outcome(sig.quantum_state, basis)
 
-        meas_results = sample_projective_measurements(
+        meas_results = backend.measure(
             state=quantum_state,
             basis=basis,
             shots=shots,

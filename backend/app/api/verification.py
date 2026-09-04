@@ -5,10 +5,11 @@ from app.database.database import get_db
 from app.models.verification import VerificationSession
 from app.schemas.verification import VerificationStartRequest, VerificationResponse, VerificationDetailResponse
 from app.services.verification_service import VerificationService
+from app.core.auth import require_roles
 
 router = APIRouter(prefix="/verification", tags=["Verification"])
 
-@router.post("/start", response_model=VerificationDetailResponse)
+@router.post("/start", response_model=VerificationDetailResponse, dependencies=[Depends(require_roles(["Verifier"]))])
 def start_verification(payload: VerificationStartRequest, db: Session = Depends(get_db)):
     """Execute signature verification with statistical analysis and deterministic threat detection."""
     try:
