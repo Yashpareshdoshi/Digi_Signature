@@ -61,7 +61,8 @@ class AttackService:
                 verifier_id="Verifier-Bob",
                 shots=shots,
                 forged_quantum_state=forged_state,
-                noise_rate=0.0 # Genuine quantum state mismatch produces the error naturally!
+                noise_rate=0.0, # Genuine quantum state mismatch produces the error naturally!
+                is_attack=True
             )
             detected = 1 if v_result["session"].decision == "REJECTED" else 0
             severity = "HIGH"
@@ -74,7 +75,8 @@ class AttackService:
                 signature_id=sig.signature_id,
                 verifier_id="Verifier-Bob",
                 shots=shots,
-                intercept_resend=True
+                intercept_resend=True,
+                is_attack=True
             )
             detected = 1 if v_result["session"].decision in ("SUSPICIOUS", "REJECTED") else 0
             severity = "HIGH" if v_result["session"].decision == "REJECTED" else "MEDIUM"
@@ -87,7 +89,8 @@ class AttackService:
                 signature_id=sig.signature_id,
                 verifier_id="Verifier-Bob",
                 claimed_signer_id=forged_signer,
-                shots=shots
+                shots=shots,
+                is_attack=True
             )
             detected = 1 if v_result["session"].decision == "REJECTED" else 0
             severity = "HIGH"
@@ -101,7 +104,8 @@ class AttackService:
                 signature_id=sig.signature_id,
                 verifier_id="Verifier-Bob",
                 simulate_nonce_reuse=True,
-                shots=shots
+                shots=shots,
+                is_attack=True
             )
             detected = 1 if v_result["session"].decision == "REJECTED" else 0
             severity = "CRITICAL"
@@ -114,7 +118,8 @@ class AttackService:
                 signature_id=sig.signature_id,
                 verifier_id="Verifier-Bob",
                 shots=shots,
-                noise_rate=noise_level
+                noise_rate=noise_level,
+                is_attack=True
             )
             detected = 1 if v_result["session"].decision in ("SUSPICIOUS", "REJECTED") else 0
             severity = "MEDIUM" if v_result["session"].decision == "SUSPICIOUS" else "HIGH"
@@ -127,7 +132,8 @@ class AttackService:
                 signature_id=sig.signature_id,
                 verifier_id="Unknown-External-Entity",
                 claimed_signer_id="Unauthorized-Signer",
-                shots=shots
+                shots=shots,
+                is_attack=True
             )
             detected = 1 if v_result["session"].decision == "REJECTED" else 0
             severity = "HIGH"
@@ -142,7 +148,8 @@ class AttackService:
                 signature_id=sig.signature_id,
                 verifier_id="Verifier-Bob",
                 custom_message=tampered_msg,
-                shots=shots
+                shots=shots,
+                is_attack=True
             )
             detected = 1 if v_result["session"].decision == "REJECTED" else 0
             severity = "CRITICAL"
@@ -187,5 +194,7 @@ class AttackService:
             "verification_session": v_result["session"],
             "statistical_details": v_result["statistical_details"],
             "rule_details": v_result["rule_details"],
+            "decision_ledger": v_result.get("decision_ledger"),
+            "qds_details": v_result.get("qds_details"),
             "alert": v_result["alert"]
         }

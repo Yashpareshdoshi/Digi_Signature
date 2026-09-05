@@ -43,9 +43,11 @@ def start_verification(payload: VerificationStartRequest, db: Session = Depends(
             reason=s.reason,
             latency_ms=s.latency_ms,
             created_at=s.created_at,
+            decision_ledger=res.get("decision_ledger"),
             statistical_details=res["statistical_details"],
             rule_details=res["rule_details"],
-            measurement_counts=res["measurement_counts"]
+            measurement_counts=res["measurement_counts"],
+            qds_details=res.get("qds_details")
         )
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))

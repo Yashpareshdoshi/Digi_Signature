@@ -1,3 +1,4 @@
+from __future__ import annotations
 import random
 import logging
 import numpy as np
@@ -117,12 +118,28 @@ class QiskitBackend(QuantumBackend):
         qc.measure(qr[0], cr[0]) # b0
         qc.measure(qr[1], cr[1]) # b1
 
-        # Step 4: Bob's conditional Pauli corrections on q2
+        # Step 4: Bob's conditional Pauli corrections on q2 based on Bell resource
         # Using modern Qiskit dynamic circuit if_test context manager
-        with qc.if_test((cr[1], 1)):
-            qc.x(qr[2])
-        with qc.if_test((cr[0], 1)):
-            qc.z(qr[2])
+        if clean_bell == "Phi+":
+            with qc.if_test((cr[1], 1)):
+                qc.x(qr[2])
+            with qc.if_test((cr[0], 1)):
+                qc.z(qr[2])
+        elif clean_bell == "Phi-":
+            with qc.if_test((cr[0], 0)):
+                qc.z(qr[2])
+            with qc.if_test((cr[1], 1)):
+                qc.x(qr[2])
+        elif clean_bell == "Psi+":
+            with qc.if_test((cr[1], 0)):
+                qc.x(qr[2])
+            with qc.if_test((cr[0], 1)):
+                qc.z(qr[2])
+        elif clean_bell == "Psi-":
+            with qc.if_test((cr[1], 0)):
+                qc.x(qr[2])
+            with qc.if_test((cr[0], 0)):
+                qc.z(qr[2])
 
         return qc, qr, cr
 
@@ -243,12 +260,20 @@ class QiskitBackend(QuantumBackend):
                 norm = np.linalg.norm(bob_raw)
                 bob_unnorm = (bob_raw / norm) if norm > 1e-12 else np.array([1.0, 0.0], dtype=np.complex128)
                 
-                # Apply Bob Pauli correction U = Z^b0 * X^b1
+                # Apply Bob Pauli correction conditioned on Bell state and (b0, b1)
                 corr_qc = QuantumCircuit(1)
-                if b1 == 1:
-                    corr_qc.x(0)
-                if b0 == 1:
-                    corr_qc.z(0)
+                if clean_bell == "Phi+":
+                    if b1 == 1: corr_qc.x(0)
+                    if b0 == 1: corr_qc.z(0)
+                elif clean_bell == "Phi-":
+                    if b0 == 0: corr_qc.z(0)
+                    if b1 == 1: corr_qc.x(0)
+                elif clean_bell == "Psi+":
+                    if b1 == 0: corr_qc.x(0)
+                    if b0 == 1: corr_qc.z(0)
+                elif clean_bell == "Psi-":
+                    if b1 == 0: corr_qc.x(0)
+                    if b0 == 0: corr_qc.z(0)
                 recovered_qiskit_sv = QiskitStatevector(bob_unnorm).evolve(corr_qc)
             else:
                 # Production path: classical bits come from the actual Aer measurement
@@ -271,7 +296,13 @@ class QiskitBackend(QuantumBackend):
         except Exception as e:
             raise RuntimeError(f"AerSimulator statevector verification failed: {e}") from e
 
-        pauli_names = {"00": "I", "01": "X", "10": "Z", "11": "ZX (or -iY)"}
+        bell_pauli_names = {
+            "Phi+": {"00": "I", "01": "X", "10": "Z", "11": "ZX (or -iY)"},
+            "Phi-": {"00": "Z", "01": "XZ", "10": "I", "11": "X"},
+            "Psi+": {"00": "X", "01": "I", "10": "ZX", "11": "Z"},
+            "Psi-": {"00": "ZX", "01": "Z", "10": "X", "11": "I"},
+        }
+        pauli_names = bell_pauli_names.get(clean_bell, bell_pauli_names["Phi+"])
         pauli_correction_name = pauli_names.get(measured_bits, "I")
 
         # Convert back to application Statevector

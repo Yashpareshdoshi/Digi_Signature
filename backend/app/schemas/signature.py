@@ -1,6 +1,7 @@
+import json
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 class SignatureCreateRequest(BaseModel):
     message: str = Field(..., min_length=1, description="Message to be signed")
@@ -31,3 +32,15 @@ class SignatureResponse(BaseModel):
 class SignatureDetailResponse(SignatureResponse):
     teleportation_data: Optional[Dict[str, Any]] = None
     measurement_summary: Optional[Dict[str, Any]] = None
+    qds_declaration: Optional[Any] = None
+    decision_ledger: Optional[Any] = None
+
+    @field_validator("qds_declaration", "decision_ledger", mode="before")
+    @classmethod
+    def parse_json_fields(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                return v
+        return v

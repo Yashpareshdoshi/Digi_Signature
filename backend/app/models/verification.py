@@ -21,6 +21,8 @@ class VerificationSession(Base):
     threat_detected = Column(String(64), default="NONE", nullable=False) # NONE, FORGERY, REPLAY, IMPERSONATION, CHANNEL_MANIPULATION, UNAUTHORIZED
     reason = Column(Text, nullable=False)
     latency_ms = Column(Float, default=0.0, nullable=False)
+    decision_ledger = Column(Text, nullable=True) # JSON: Structured rule evaluation audit
+    is_attack = Column(Integer, default=0, nullable=False) # 0 = Legitimate verification, 1 = Simulated attack
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     signature = relationship("Signature", back_populates="verifications")

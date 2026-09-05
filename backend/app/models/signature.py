@@ -19,6 +19,10 @@ class Signature(Base):
     teleport_bits = Column(String(8), nullable=True) # e.g. "00", "01", "10", "11"
     pauli_correction = Column(String(16), nullable=True) # e.g. "I", "X", "Z", "ZX (or -iY)"
     teleport_fidelity = Column(Float, default=1.0, nullable=True)
+    qds_declaration = Column(Text, nullable=True) # JSON: Alice's revealed declaration Dec_A
+    qds_vk_record = Column(Text, nullable=True)   # JSON: Bob's classical verification record VK_B
+    qds_token_indices = Column(Text, nullable=True) # JSON: Selected token indices
+    decision_ledger = Column(Text, nullable=True) # JSON: Structured decision ledger
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     measurements = relationship("Measurement", back_populates="signature", cascade="all, delete-orphan")

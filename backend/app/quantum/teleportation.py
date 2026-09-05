@@ -119,23 +119,38 @@ def simulate_teleportation(
         "circuit_gate": f"MEASURE(q0, q1) => '{measured_bits}'"
     })
     
-    # Step 6: Pauli Correction Selection
-    # Standard Teleportation Pauli Correction: U_Bob = Z^b0 * X^b1
-    if measured_bits == "00":
-        pauli_correction_name = "I"
-        correction_matrix = I2
-    elif measured_bits == "01":
-        pauli_correction_name = "X"
-        correction_matrix = X
-    elif measured_bits == "10":
-        pauli_correction_name = "Z"
-        correction_matrix = Z
-    elif measured_bits == "11":
-        pauli_correction_name = "ZX (or -iY)"
-        correction_matrix = Z @ X
-    else:
-        pauli_correction_name = "I"
-        correction_matrix = I2
+    # Step 6: Pauli Correction Selection conditioned on Bell resource & classical bits
+    bell_clean = bell_state_name.replace("|", "").replace(">", "").strip()
+    
+    bell_pauli_corrections = {
+        "Phi+": {
+            "00": ("I", I2),
+            "01": ("X", X),
+            "10": ("Z", Z),
+            "11": ("ZX (or -iY)", Z @ X),
+        },
+        "Phi-": {
+            "00": ("Z", Z),
+            "01": ("XZ", X @ Z),
+            "10": ("I", I2),
+            "11": ("X", X),
+        },
+        "Psi+": {
+            "00": ("X", X),
+            "01": ("I", I2),
+            "10": ("ZX", Z @ X),
+            "11": ("Z", Z),
+        },
+        "Psi-": {
+            "00": ("ZX", Z @ X),
+            "01": ("Z", Z),
+            "10": ("X", X),
+            "11": ("I", I2),
+        },
+    }
+    
+    corrections_for_bell = bell_pauli_corrections.get(bell_clean, bell_pauli_corrections["Phi+"])
+    pauli_correction_name, correction_matrix = corrections_for_bell.get(measured_bits, ("I", I2))
         
     recovered_data = correction_matrix @ bob_state_before_correction.data
     recovered_state = Statevector(recovered_data, num_qubits=1)

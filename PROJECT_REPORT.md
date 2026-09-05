@@ -48,7 +48,7 @@ Our application is a full-stack interactive platform with both a web UI and a hi
 │                                  │ and IBM Qiskit Aer circuit sim.    │
 │ 3. Qiskit Circuit & QASM Modal   │ View gate diagrams & export raw    │
 │                                  │ OpenQASM 3.0 quantum code.         │
-│ 4. Deterministic Verification    │ Measure qubits across 1000 shots,  │
+│ 4. Deterministic Verification    │ Sifted token ensemble (n≈1000),    │
 │                                  │ inspect Wilson 95% CI & decisions. │
 │ 5. Attack Injection Simulator    │ Safely launch Forgery, Tampering,  │
 │                                  │ Replay, Impersonation & Noise.     │
@@ -131,7 +131,7 @@ If an adversary (Eve) tries to forge Alice's signature without access to the gen
 ## 📊 6. The Statistical Formulations
 
 ### 1. Empirical Error Rate ($E$)
-$$E = \frac{\text{Number of Unexpected Measurement Collapses}}{\text{Total Shots (e.g. 1000)}}$$
+$$E = \frac{\text{Number of Unexpected Measurement Collapses}}{\text{Total Statistical Samples } n \text{ (e.g. } n_{\text{sifted}} \times N_{\text{shots}} \approx 1000\text{)}}$$
 
 ### 2. Wilson Score 95% Confidence Interval
 Traditional normal approximations fail when error rates are close to zero. We use the asymmetric **Wilson Score Interval**:
@@ -162,14 +162,14 @@ Our system is structured into 3 distinct, professional tiers:
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           2. BACKEND TIER                               │
-│  • Python 3.13 + FastAPI for asynchronous, high-throughput REST APIs    │
+│  • Python 3.12+ + FastAPI for asynchronous, high-throughput REST APIs   │
 │  • Dual Quantum Layer (Abstract Factory Pattern):                       │
 │      a) NumPy Backend: Ultra-fast (2ms), exact complex statevectors.    │
 │      b) Qiskit Backend: IBM's industry-standard AerSimulator,           │
 │         OpenQASM 3.0 export, and circuit diagram generation.            │
 │  • Deterministic Security Engine: Strictly ZERO AI/ML code.             │
 │  • SciPy: Exact Wilson score confidence interval computations.          │
-│  • Pytest Suite: 38 automated unit & integration tests.                 │
+│  • Pytest Suite: 47 automated unit & integration tests.                 │
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │ SQLAlchemy ORM
                                      ▼
@@ -195,21 +195,22 @@ Our system is structured into 3 distinct, professional tiers:
 > **Answer:** *"It's not teleporting physical matter like in Star Trek! In physics, quantum teleportation means transferring the exact quantum state (the information) from one qubit to another using entanglement and classical communication bits, without transmitting the physical qubit itself."*
 
 ### Q4: "What happens if a hacker intercepts the transmission?"
-> **Answer:** *"Due to the Quantum No-Cloning Theorem, any attempt to measure or clone the quantum state collapses it. When Bob measures the received state, the error rate spikes to roughly 50%. The system immediately flags it under Rule 4 as a Forgery/Eavesdropping attempt and rejects it."*
+> **Answer:** *"Due to the Quantum No-Cloning Theorem, any attempt to measure or clone the quantum state collapses it. When Bob measures the received state, the error rate spikes to roughly 25% for conjugate-basis intercept-resend, or 50% for blind guessing. The system immediately flags it under Rule 4 as an Eavesdropping/Forgery attempt and rejects it."*
 
 ### Q5: "What makes your project unique compared to others?"
 > **Answer:**
 > 1. *It bridges quantum physics with real cyber-defense workflows (SOC dashboard, attack simulations).*
 > 2. *It offers dual quantum engines (NumPy + Qiskit) with interactive circuit viewing.*
-> 3. *It achieves 100% attack detection rate with 0% false positives using strictly deterministic math.*
+> 3. *It achieves 100% attack detection rate with 0% false positives across evaluated benchmark scenarios using strictly deterministic math.*
 
 ---
 
 ## 🏆 9. Benchmark & Verification Highlights
 
-- **Verification Accuracy:** **100%** across all test suites.
-- **Attack Detection Rate:** **100%** (0 missed attacks).
-- **False Positive Rate:** **0%** (0 legitimate signatures rejected).
-- **Quantum Fidelity:** **1.0000** (Perfect state reconstruction).
+- **Benchmark Scope:** Empirical evaluations conducted on automated integration test suites and seeded multi-attack simulation trials under calibrated noise models ($p_{\text{depol}} \le 0.02$).
+- **Verification Accuracy:** **100%** on benchmark test suite.
+- **Attack Detection Rate:** **100%** (0 missed attacks in benchmark evaluation).
+- **False Positive Rate:** **0%** (0 legitimate signatures rejected in benchmark evaluation).
+- **Quantum Fidelity:** **1.0000** (Exact state reconstruction on noiseless teleportation).
 - **Backend Latency:** **~2.3 ms** (NumPy) / **~14.5 ms** (Qiskit Aer).
-- **Automated Tests:** **38 passing unit tests** covering quantum physics, statistical bounds, attack vectors, and API integrity.
+- **Automated Tests:** **47 passing unit & integration tests** covering quantum physics, statistical bounds, QDS protocols, attack vectors, and API integrity.

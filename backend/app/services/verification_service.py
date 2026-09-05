@@ -1,3 +1,4 @@
+import json
 import time
 from datetime import datetime
 from typing import Optional, Dict, Any
@@ -7,8 +8,10 @@ from app.core.security import compute_sha256, generate_session_id, generate_aler
 from app.models.signature import Signature
 from app.models.verification import VerificationSession
 from app.models.alert import Alert
+from app.models.setting import SystemSetting
 from app.quantum.factory import get_quantum_backend
 from app.quantum.measurement import get_expected_outcome
+from app.quantum.qds_protocol import verify_sifted_declaration
 from app.services.statistics_service import analyze_measurement_statistics
 from app.services.threat_detection_service import ThreatDetectionService
 from app.services.audit_service import AuditService
@@ -26,6 +29,7 @@ class VerificationService:
         simulate_nonce_reuse: bool = False,
         forged_quantum_state: Optional[str] = None,
         intercept_resend: bool = False,
+        is_attack: bool = False,
         low_threshold: Optional[float] = None,
         high_threshold: Optional[float] = None
     ) -> Dict[str, Any]:
@@ -41,8 +45,18 @@ class VerificationService:
         """
         start_time = time.time()
         
-        low_t = low_threshold if low_threshold is not None else settings.LOW_ERROR_THRESHOLD
-        high_t = high_threshold if high_threshold is not None else settings.HIGH_ERROR_THRESHOLD
+        # Dynamic threshold lookup from SQLite system_settings with fallback to settings defaults
+        def _get_setting_val(k: str, default_val: float) -> float:
+            try:
+                row = db.query(SystemSetting).filter(SystemSetting.key == k).first()
+                if row and row.value is not None:
+                    return float(row.value)
+            except Exception:
+                pass
+            return default_val
+
+        low_t = low_threshold if low_threshold is not None else _get_setting_val("LOW_ERROR_THRESHOLD", settings.LOW_ERROR_THRESHOLD)
+        high_t = high_threshold if high_threshold is not None else _get_setting_val("HIGH_ERROR_THRESHOLD", settings.HIGH_ERROR_THRESHOLD)
 
         sig = db.query(Signature).filter(Signature.signature_id == signature_id).first()
         if not sig:
@@ -52,66 +66,98 @@ class VerificationService:
         claimed_signer = claimed_signer_id if claimed_signer_id else sig.signer_id
         identity_valid = (claimed_signer == sig.signer_id)
 
-        # Check 2: Classical Message Digest Match
+        # Check 2: Classical Message Digest Match h = SHA-256(M || N) with legacy SHA-256(M) fallback
         msg_to_check = custom_message if custom_message is not None else sig.message
-        calculated_hash = compute_sha256(msg_to_check)
-        message_hash_match = (calculated_hash == sig.message_hash)
+        calculated_hash_with_nonce = compute_sha256(msg_to_check + (sig.nonce or ""))
+        calculated_hash_plain = compute_sha256(msg_to_check)
+        message_hash_match = (sig.message_hash in (calculated_hash_with_nonce, calculated_hash_plain))
 
         # Check 3: Nonce Consumption / Replay
         nonce_already_consumed = (sig.nonce_consumed == 1) or simulate_nonce_reuse
 
         # Step 4: Quantum Measurement Simulation over the Teleported Quantum Channel via Backend
         backend = get_quantum_backend()
+        qds_res = None
 
-        if forged_quantum_state:
-            # Attacker forged/injected a fabricated quantum state without the legitimate entangled key
-            quantum_state = backend.get_pauli_state(forged_quantum_state)
-        else:
-            input_state = backend.get_pauli_state(sig.quantum_state)
-            # Bob executes teleportation recovery using Alice's recorded classical bits
-            teleport_res = backend.teleport(
-                input_state=input_state,
-                bell_state_name=sig.bell_state or "Phi+",
-                force_measurement_bits=sig.teleport_bits
+        if sig.qds_declaration and sig.qds_vk_record:
+            declaration = json.loads(sig.qds_declaration) if isinstance(sig.qds_declaration, str) else sig.qds_declaration
+            vk_table = json.loads(sig.qds_vk_record) if isinstance(sig.qds_vk_record, str) else sig.qds_vk_record
+
+            attack_scenario = "NONE"
+            if forged_quantum_state:
+                attack_scenario = "SIGNATURE_FORGERY"
+            elif intercept_resend:
+                attack_scenario = "INTERCEPT_RESEND"
+
+            shots_per_token = max(1, shots // max(1, len(declaration)))
+            qds_res = verify_sifted_declaration(
+                bob_vk_table=vk_table,
+                declaration=declaration,
+                shots_per_token=shots_per_token,
+                noise_rate=noise_rate,
+                attack_scenario=attack_scenario,
+                backend=backend
             )
-            quantum_state = teleport_res.get("recovered_statevector") or backend.get_pauli_state(sig.quantum_state)
 
-            # Intercept-Resend attack: Eve intercepts and measures flying qubit, causing state collapse
-            if intercept_resend:
-                quantum_state, _ = backend.apply_channel_noise(
-                    state=quantum_state,
-                    noise_type="intercept_resend",
-                    noise_parameter=1.0
+            effective_shots = qds_res["total_simulation_shots"] if qds_res["total_simulation_shots"] > 0 else shots
+            effective_unexpected = qds_res["unexpected_count"]
+            stats_analysis = analyze_measurement_statistics(
+                unexpected_count=effective_unexpected,
+                total_shots=effective_shots,
+                low_threshold=low_t,
+                high_threshold=high_t,
+                confidence_level=settings.CONFIDENCE_LEVEL
+            )
+            meas_counts = {
+                "expected": stats_analysis["expected_count"],
+                "unexpected": stats_analysis["unexpected_count"]
+            }
+        else:
+            # Fallback legacy single-state measurement path
+            if forged_quantum_state:
+                quantum_state = backend.get_pauli_state(forged_quantum_state)
+            else:
+                input_state = backend.get_pauli_state(sig.quantum_state)
+                teleport_res = backend.teleport(
+                    input_state=input_state,
+                    bell_state_name=sig.bell_state or "Phi+",
+                    force_measurement_bits=sig.teleport_bits
                 )
+                quantum_state = teleport_res.get("recovered_statevector") or backend.get_pauli_state(sig.quantum_state)
 
-            # Apply physical quantum channel noise (depolarizing / channel perturbation)
-            if noise_rate > 0.0:
-                quantum_state, _ = backend.apply_channel_noise(
-                    state=quantum_state,
-                    noise_type="depolarizing",
-                    noise_parameter=noise_rate
-                )
+                if intercept_resend:
+                    quantum_state, _ = backend.apply_channel_noise(
+                        state=quantum_state,
+                        noise_type="intercept_resend",
+                        noise_parameter=1.0
+                    )
 
-        # Default verification basis matches quantum state eigenbasis or Z
-        basis = "Z" if sig.quantum_state in ("|0>", "|1>") else ("X" if sig.quantum_state in ("|+>", "|->") else "Y")
-        expected_outcome = get_expected_outcome(sig.quantum_state, basis)
+                if noise_rate > 0.0:
+                    quantum_state, _ = backend.apply_channel_noise(
+                        state=quantum_state,
+                        noise_type="depolarizing",
+                        noise_parameter=noise_rate
+                    )
 
-        meas_results = backend.measure(
-            state=quantum_state,
-            basis=basis,
-            shots=shots,
-            expected_outcome=expected_outcome,
-            noise_rate=noise_rate
-        )
+            basis = "Z" if sig.quantum_state in ("|0>", "|1>") else ("X" if sig.quantum_state in ("|+>", "|->") else "Y")
+            expected_outcome = get_expected_outcome(sig.quantum_state, basis)
 
-        # Step 5: Statistical Analysis (Wilson Score CI & Binomial Forgery Likelihood)
-        stats_analysis = analyze_measurement_statistics(
-            unexpected_count=meas_results["unexpected_count"],
-            total_shots=shots,
-            low_threshold=low_t,
-            high_threshold=high_t,
-            confidence_level=settings.CONFIDENCE_LEVEL
-        )
+            meas_results = backend.measure(
+                state=quantum_state,
+                basis=basis,
+                shots=shots,
+                expected_outcome=expected_outcome,
+                noise_rate=0.0
+            )
+
+            stats_analysis = analyze_measurement_statistics(
+                unexpected_count=meas_results["unexpected_count"],
+                total_shots=shots,
+                low_threshold=low_t,
+                high_threshold=high_t,
+                confidence_level=settings.CONFIDENCE_LEVEL
+            )
+            meas_counts = meas_results["counts"]
 
         # Step 6: Deterministic Threat Detection
         eval_result = ThreatDetectionService.evaluate_signature_security(
@@ -130,6 +176,7 @@ class VerificationService:
 
         latency_ms = (time.time() - start_time) * 1000.0
         session_id = generate_session_id()
+        decision_ledger_json = json.dumps(eval_result.get("decision_ledger", []))
 
         # Step 7: Record Verification Session
         v_session = VerificationSession(
@@ -137,7 +184,7 @@ class VerificationService:
             signature_id=signature_id,
             verifier_id=verifier_id,
             signer_id=claimed_signer,
-            measurement_count=shots,
+            measurement_count=stats_analysis["total_shots"],
             error_count=stats_analysis["unexpected_count"],
             error_rate=stats_analysis["error_rate"],
             forgery_probability=stats_analysis["forgery_probability"],
@@ -147,11 +194,14 @@ class VerificationService:
             threat_detected=eval_result["threat_detected"],
             reason=eval_result["reason"],
             latency_ms=latency_ms,
+            decision_ledger=decision_ledger_json,
+            is_attack=1 if is_attack else 0,
             created_at=datetime.utcnow()
         )
         db.add(v_session)
 
-        # Update signature status and consume nonce if verified
+        # Update signature status, decision ledger, and consume nonce if verified
+        sig.decision_ledger = decision_ledger_json
         if eval_result["decision"] == "VERIFIED":
             sig.status = "VERIFIED"
             sig.nonce_consumed = 1
@@ -199,6 +249,8 @@ class VerificationService:
             "session": v_session,
             "statistical_details": stats_analysis,
             "rule_details": eval_result,
-            "measurement_counts": meas_results["counts"],
+            "decision_ledger": eval_result.get("decision_ledger", []),
+            "qds_details": qds_res,
+            "measurement_counts": meas_counts,
             "alert": alert_record
         }

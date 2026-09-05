@@ -68,10 +68,13 @@ class ExperimentService:
                                 rec_state = backend.get_pauli_state(forged_symbol)
                                 is_attack = True
                             elif attack_scenario == "INTERCEPT_RESEND":
-                                # Eve measures in conjugate basis and resends collapsed state
-                                eve_basis = "X" if basis == "Z" else "Z"
+                                # Standard BB84 Intercept-Resend: Eve chooses basis randomly from {Z, X}
+                                # Expected disturbance on sifted bits: 0.5 * 0% + 0.5 * 50% = 25%
+                                eve_basis = random.choice(["Z", "X"])
                                 eve_meas = backend.measure(rec_state, basis=eve_basis, shots=1, noise_rate=0.0)
-                                collapsed = ("|0>" if eve_meas["outcome"] == 0 else "|1>") if eve_basis == "Z" else ("|+>" if eve_meas["outcome"] == 0 else "|->")
+                                sample_recs = eve_meas.get("sample_records", [])
+                                actual_outcome = sample_recs[0]["actual_outcome"] if sample_recs else ("0" if eve_basis == "Z" else "+")
+                                collapsed = f"|{actual_outcome}>"
                                 rec_state = backend.get_pauli_state(collapsed)
                                 is_attack = True
                             elif attack_scenario == "CHANNEL_MANIPULATION":

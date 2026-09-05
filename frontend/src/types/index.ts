@@ -115,6 +115,84 @@ export interface RuleDetails {
   action_recommended: string;
 }
 
+export interface DecisionLedgerRule {
+  id: string;
+  name: string;
+  condition: string;
+  inputs?: Record<string, any>;
+  status: 'PASS' | 'FAIL' | 'NOT REACHED';
+  explanation: string;
+}
+
+export interface DecisionLedger {
+  metadata?: {
+    session_id?: string;
+    signature_id?: string;
+    signer_id?: string;
+    verifier_id?: string;
+    timestamp?: string;
+  };
+  classical_evidence?: {
+    message_hash?: string;
+    hash_comparison?: string;
+    nonce?: string;
+    nonce_freshness?: string;
+    identity_authorization?: string;
+  };
+  quantum_evidence?: {
+    token_pool_size?: number;
+    signature_token_count?: number;
+    sifted_token_count?: number;
+    total_shots?: number;
+    error_count?: number;
+    empirical_qber?: number;
+    wilson_ci_lower?: number;
+    wilson_ci_upper?: number;
+    wilson_ci_text?: string;
+    active_threshold_low?: number;
+    active_threshold_high?: number;
+    forgery_likelihood?: number;
+  };
+  rules?: DecisionLedgerRule[];
+  final_decision?: {
+    decision?: string;
+    threat_detected?: string;
+    severity?: string;
+    reason?: string;
+    action_recommended?: string;
+  };
+}
+
+export interface QDSTokenDetail {
+  index: number;
+  sifted: boolean;
+  alice_basis: string;
+  alice_bit: number;
+  bob_basis: string;
+  bob_outcome: string;
+  expected_outcome: string;
+  token_shots: number;
+  token_errors: number;
+  token_error_rate: number;
+  status: string;
+}
+
+export interface QDSDetails {
+  pool_size: number;
+  declared_token_count: number;
+  sifted_token_count: number;
+  unsifted_token_count: number;
+  sifted_indices: number[];
+  unsifted_indices: number[];
+  total_simulation_shots: number;
+  unexpected_count: number;
+  empirical_qber: number;
+  wilson_ci_lower: number;
+  wilson_ci_upper: number;
+  confidence_interval_text: string;
+  token_details: QDSTokenDetail[];
+}
+
 export interface VerificationSession {
   id: number;
   session_id: string;
@@ -131,6 +209,9 @@ export interface VerificationSession {
   threat_detected: string;
   reason: string;
   latency_ms: number;
+  decision_ledger?: DecisionLedger;
+  qds_details?: QDSDetails;
+  is_attack?: number;
   created_at: string;
   statistical_details?: StatisticalDetails;
   rule_details?: RuleDetails;

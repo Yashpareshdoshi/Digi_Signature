@@ -27,3 +27,4 @@ class AttackDetailResponse(AttackResponse):
     verification_session: Optional[Dict[str, Any]] = None
     alert_generated: Optional[Dict[str, Any]] = None
     comparison: Optional[Dict[str, Any]] = None
+    decision_ledger: Optional[Any] = None

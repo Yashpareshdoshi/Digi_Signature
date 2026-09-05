@@ -1,6 +1,7 @@
+import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 class VerificationStartRequest(BaseModel):
     signature_id: str = Field(..., description="ID of the signature to verify")
@@ -29,11 +30,24 @@ class VerificationResponse(BaseModel):
     threat_detected: str
     reason: str
     latency_ms: float
+    decision_ledger: Optional[Any] = None
+    is_attack: Optional[int] = 0
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("decision_ledger", mode="before")
+    @classmethod
+    def parse_decision_ledger(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                return v
+        return v
 
 class VerificationDetailResponse(VerificationResponse):
     statistical_details: Optional[Dict[str, Any]] = None
     rule_details: Optional[Dict[str, Any]] = None
     measurement_counts: Optional[Dict[str, int]] = None
+    qds_details: Optional[Dict[str, Any]] = None

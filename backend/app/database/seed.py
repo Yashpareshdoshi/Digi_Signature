@@ -1,5 +1,7 @@
 import random
+from typing import Optional
 from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
 from app.database.database import SessionLocal, engine, Base, init_and_upgrade_db
 from app.models.user import User
 from app.models.signature import Signature
@@ -30,10 +32,13 @@ SAMPLE_MESSAGES = [
     "Authenticate Zero-Trust Edge Node Gateway Session"
 ]
 
-def seed_database():
+def seed_database(db: Session = None):
     """Populates SQLite database with comprehensive initial data."""
     init_and_upgrade_db()
-    db = SessionLocal()
+    close_when_done = False
+    if db is None:
+        db = SessionLocal()
+        close_when_done = True
 
     # 1. Always Ensure Users with Prototype API Keys Exist
     users_data = [
@@ -61,7 +66,8 @@ def seed_database():
     # 3. Check if signatures already seeded
     if db.query(Signature).count() >= 5:
         print("Database already contains seed signatures. Skipping signature generation.")
-        db.close()
+        if close_when_done:
+            db.close()
         return
 
     print("Seeding database with realistic Quantum Digital Signature data...")
@@ -128,7 +134,8 @@ def seed_database():
             shots=1000
         )
 
-    db.close()
+    if close_when_done:
+        db.close()
     print("Database seeding successfully finished.")
 
 if __name__ == "__main__":

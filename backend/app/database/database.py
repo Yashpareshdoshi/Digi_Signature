@@ -36,6 +36,22 @@ def init_and_upgrade_db():
                     conn.execute(text("ALTER TABLE signatures ADD COLUMN pauli_correction VARCHAR(16);"))
                 if "teleport_fidelity" not in cols:
                     conn.execute(text("ALTER TABLE signatures ADD COLUMN teleport_fidelity FLOAT DEFAULT 1.0;"))
+                if "qds_declaration" not in cols:
+                    conn.execute(text("ALTER TABLE signatures ADD COLUMN qds_declaration TEXT;"))
+                if "qds_vk_record" not in cols:
+                    conn.execute(text("ALTER TABLE signatures ADD COLUMN qds_vk_record TEXT;"))
+                if "qds_token_indices" not in cols:
+                    conn.execute(text("ALTER TABLE signatures ADD COLUMN qds_token_indices TEXT;"))
+                if "decision_ledger" not in cols:
+                    conn.execute(text("ALTER TABLE signatures ADD COLUMN decision_ledger TEXT;"))
+
+            # Upgrade verification_sessions table if missing decision_ledger
+            if "verification_sessions" in inspector.get_table_names():
+                v_cols = [c["name"] for c in inspector.get_columns("verification_sessions")]
+                if "decision_ledger" not in v_cols:
+                    conn.execute(text("ALTER TABLE verification_sessions ADD COLUMN decision_ledger TEXT;"))
+                if "is_attack" not in v_cols:
+                    conn.execute(text("ALTER TABLE verification_sessions ADD COLUMN is_attack INTEGER DEFAULT 0;"))
             
             # Upgrade users table if missing api_key
             if "users" in inspector.get_table_names():

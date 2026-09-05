@@ -260,3 +260,34 @@ def test_qiskit_error_handling_invalid_inputs():
     with pytest.raises(ValueError, match="positive integer"):
         qk.teleport(s_1q, shots=0)
 
+
+def test_teleportation_all_four_bell_states_numpy():
+    """Verify that all 4 Bell resources achieve fidelity 1.0 on NumPy for all BB84 states and measurement branches."""
+    states = ["|0>", "|1>", "|+>", "|->"]
+    bell_states = ["Phi+", "Phi-", "Psi+", "Psi-"]
+    branches = ["00", "01", "10", "11"]
+    for bell in bell_states:
+        for s_label in states:
+            in_state = get_pauli_eigenstate(s_label)
+            for branch in branches:
+                res = simulate_teleportation(
+                    input_state=in_state,
+                    bell_state_name=bell,
+                    force_measurement_bits=branch
+                )
+                assert np.isclose(res["fidelity"], 1.0, atol=1e-5), f"NumPy failed for Bell {bell}, state {s_label}, branch {branch}"
+
+
+def test_teleportation_all_four_bell_states_qiskit():
+    """Verify that all 4 Bell resources achieve fidelity near 1.0 on Qiskit Aer for all BB84 states."""
+    from app.quantum.qiskit_backend import QiskitBackend
+    qk = QiskitBackend()
+    states = ["|0>", "|1>", "|+>", "|->"]
+    bell_states = ["Phi+", "Phi-", "Psi+", "Psi-"]
+    for bell in bell_states:
+        for s_label in states:
+            in_state = qk.get_pauli_state(s_label)
+            res = qk.teleport(in_state, bell_state_name=bell, shots=200)
+            assert res["fidelity"] >= 0.99, f"Qiskit Aer failed for Bell {bell}, state {s_label}, got fidelity {res['fidelity']}"
+
+

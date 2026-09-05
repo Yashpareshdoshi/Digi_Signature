@@ -57,7 +57,8 @@ def simulate_attack(payload: AttackSimulateRequest, db: Session = Depends(get_db
                 "detected": bool(atk.detected),
                 "severity": atk.severity,
                 "decision": v_sess.decision
-            }
+            },
+            decision_ledger=res.get("decision_ledger")
         )
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))

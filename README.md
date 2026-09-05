@@ -1,7 +1,7 @@
 # 🛡️ Quantum-Inspired Cyber Threat Detection for Digital Signature Security
 ### Deterministic, Statistical & Protocol-Aware Threat Detection for Teleportation-Based Quantum Digital Signatures (QDS)
 
-![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)
 ![Qiskit](https://img.shields.io/badge/Qiskit-1.3+-6929C4?logo=ibm&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
@@ -10,7 +10,7 @@
 ![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF?logo=vite&logoColor=white)
 ![Pytest](https://img.shields.io/badge/Pytest-8.0+-0A9EDC?logo=pytest&logoColor=white)
 ![Architecture](https://img.shields.io/badge/Architecture-Strictly_Zero_AI%2FML-brightgreen)
-![Attack Detection Rate](https://img.shields.io/badge/Attack_Detection_Rate-100%25-success)
+![Evaluation](https://img.shields.io/badge/Evaluation-Empirically_Validated-success)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 ---
@@ -68,7 +68,7 @@ This project implements an academic research simulation of **Teleportation-Based
 
 ## 🛠️ Technology Stack
 
-- **Backend Framework**: Python 3.13, FastAPI, Pydantic V2, Uvicorn, Pytest.
+- **Backend Framework**: Python 3.12+, FastAPI, Pydantic V2, Uvicorn, Pytest.
 - **Quantum Simulation Layer**:
   - **NumPy Reference Backend**: Exact $2^n$-statevector matrix simulator ($X, Y, Z, H, S, T, CNOT$, Projective Measurements).
   - **IBM Qiskit Backend**: Qiskit 1.3+ with `AerSimulator`, `QuantumCircuit`, dynamic `c_if` classical conditioning, OpenQASM 3.0 export, and ASCII circuit visualization.
@@ -79,71 +79,72 @@ This project implements an academic research simulation of **Teleportation-Based
 
 ---
 
-## 🔬 Core Quantum Protocol (Teleportation-Based QDS)
+## 🔬 Core Quantum Protocol (Designated-Verifier, Memory-Free Sifted-Measurement QDS)
 
-The protocol utilizes quantum entanglement (EPR pairs), quantum teleportation, classical SHA-256 digest authentication, and Pauli correction matrices to achieve secure signature transmission.
+This platform implements an academic research simulation prototype inspired by foundational QDS literature (Gottesman-Chuang 2001, Andersson-Curty-Jex 2006, Collins et al. 2014, Wallden et al. 2015) and quantum teleportation transport (Bennett et al. 1993).
 
 ```
-       Alice (Signer)                                                  Bob (Verifier)
- ┌────────────────────────┐                                     ┌────────────────────────┐
- │ Message M + Nonce N    │                                     │                        │
- │ H = SHA-256(M)         │                                     │                        │
- │ Prepare |ψ⟩ on q0      │                                     │                        │
- └───────────┬────────────┘                                     └────────────────────────┘
-             │                                                               ▲
-             │   ┌───────────────────────────────────────────────────────┐   │
-             │   │ Shared Bell Pair: |Φ+⟩ = 1/√2 (|00⟩ + |11⟩) on (q1,q2)│   │
-             │   └───────────────────────────┬───────────────────────────┘   │
-             │                               │                               │
-             ▼                               ▼ (q1)                          ▼ (q2)
- ┌────────────────────────┐                  │                  ┌────────────────────────┐
- │ Alice Bell Measurement:│                  │                  │ Bob Pauli Correction:  │
- │ CNOT(q0 → q1)          │                  │                  │ Apply U = Z^b0 * X^b1  │
- │ Hadamard H(q0)         │                  │                  │ State collapses to |ψ⟩ │
- │ Measure (q0, q1)       │                  │                  └───────────┬────────────┘
- └───────────┬────────────┘                  │                              │
-             │                               │                              │
-             │ Classical bits (b0, b1) + H + N                              │
-             └─────────────────────────────────────────────────────────────►│
-                                                                            ▼
-                                                                ┌────────────────────────┐
-                                                                │ Projective Measurement │
-                                                                │ Across N=1000 shots in │
-                                                                │ agreed Pauli basis     │
-                                                                └───────────┬────────────┘
-                                                                            │
-                                                                            ▼
-                                                                ┌────────────────────────┐
-                                                                │ Deterministic Decision │
-                                                                │ E ≤ 5%   → VERIFIED    │
-                                                                │ 5%<E≤15% → SUSPICIOUS  │
-                                                                │ E > 15%  → REJECTED    │
-                                                                └────────────────────────┘
+          Alice (Signer)                                                  Bob (Verifier)
+   ┌───────────────────────────┐                                   ┌───────────────────────────┐
+   │ Token Pool SK_A (L=32)    │                                   │                           │
+   │ Private BB84 State Prep   │                                   │                           │
+   └─────────────┬─────────────┘                                   └───────────────────────────┘
+                 │                                                               ▲
+                 │   ┌───────────────────────────────────────────────────────┐   │
+                 │   │ Shared Bell Resource: |Φ+⟩, |Φ-⟩, |Ψ+⟩, or |Ψ-⟩       │   │
+                 │   └───────────────────────────┬───────────────────────────┘   │
+                 │                               │                               │
+                 ▼                               ▼ (q1)                          ▼ (q2)
+   ┌───────────────────────────┐                 │                 ┌───────────────────────────┐
+   │ Alice Joint Bell Meas:    │                 │                 │ Bob Pauli Correction:     │
+   │ CNOT(q0 → q1), H(q0)      │                 │                 │ Exact 4-Bell state matrix │
+   │ Bits (b0, b1) ∈ {0,1}^2   │                 │                 │ Bob Immediate Conjugate   │
+   └─────────────┬─────────────┘                 │                 │ Measurement B_B ∈ {Z, X}  │
+                 │                               │                 │ Records VK_B (No Memory!) │
+                 │ Classical feed-forward (b0, b1)                 └─────────────┬─────────────┘
+                 └──────────────────────────────────────────────────────────────►│
+                                                                                 │
+   ┌───────────────────────────┐                                                 │
+   │ Message M + Nonce N       │                                                 │
+   │ h = SHA-256(M || N)       │                                                 │
+   │ Unbiased Rejection Sample │                                                 │
+   │ Selects M=8 Token Indices │                                                 │
+   │ Reveals Dec_A for M tokens│                                                 │
+   └─────────────┬─────────────┘                                                 │
+                 │ Classical Signature Declaration Dec_A                         │
+                 └──────────────────────────────────────────────────────────────►│
+                                                                                 ▼
+                                                                   ┌───────────────────────────┐
+                                                                   │ Bob Basis Sifting Check:  │
+                                                                   │ Retain B_B[i] == B_A[i]   │
+                                                                   │ (n_sifted ≈ 4 tokens)     │
+                                                                   │ Nshots=250 Born samples/pos│
+                                                                   │ Total n ≈ 1000 samples    │
+                                                                   │ Wilson 95% Confidence CI  │
+                                                                   └─────────────┬─────────────┘
+                                                                                 │
+                                                                                 ▼
+                                                                   ┌───────────────────────────┐
+                                                                   │ Deterministic Ledger:     │
+                                                                   │ Rules 1-6 Audit Chain     │
+                                                                   │ (PASS / FAIL / NOT REACHED│
+                                                                   └───────────────────────────┘
 ```
 
-### Step-by-Step Protocol Stages:
-1. **Classical Message Digest & Nonce**:
-   - Alice creates message $M$ and unique cryptographic nonce $N$.
-   - Computes classical digest $H = \text{SHA-256}(M)$.
-2. **Quantum State Preparation**:
-   - Alice encodes the quantum signature token into qubit $q_0$ as a Pauli eigenstate $|\psi\rangle \in \{|0\rangle, |1\rangle, |+\rangle, |-\rangle, |+i\rangle, |-i\rangle\}$.
-3. **Bell Pair Entanglement**:
-   - Alice and Bob share an entangled Bell state on qubits $(q_1, q_2)$:
-     $$|\Phi^+\rangle = \frac{1}{\sqrt{2}} (|00\rangle + |11\rangle)$$
-4. **Alice's 2-Qubit Bell-Basis Measurement**:
-   - Alice applies $CNOT(q_0 \to q_1)$ followed by $H(q_0)$.
-   - Alice measures $(q_0, q_1)$ yielding classical outcome bits $(b_0, b_1) \in \{00, 01, 10, 11\}$.
-5. **Classical Transmission & Bob's Pauli Correction**:
-   - Alice transmits classical bits $(b_0, b_1)$ to Bob.
-   - Bob applies unitary correction operator $U_{\text{Bob}} = Z^{b_0} X^{b_1}$ to his qubit $q_2$:
-     - $00 \implies I$ (Identity)
-     - $01 \implies X$ (Bit flip)
-     - $10 \implies Z$ (Phase flip)
-     - $11 \implies ZX = -iY$ (Bit & Phase flip)
-   - Bob's qubit $q_2$ collapses to the exact original state $|\psi\rangle$ with state fidelity $\mathcal{F} = 1.000$.
-6. **Projective Verification Measurements**:
-   - Bob performs $N = 1000$ projective measurement shots in the authorized basis.
-   - Computes the empirical error rate $E$ and tests against deterministic thresholds.
+### Protocol Workflow Stages:
+1. **Setup & Enrollment (Memory-Free Teleportation Transport)**:
+   - Alice generates a private table of $L = 32$ BB84 states $SK_A = \{(B_A[i], \alpha_A[i])\}_{i=0}^{L-1}$. Alice's table remains strictly confidential.
+   - For each token, Alice and Bob share an entangled Bell pair $|\beta\rangle \in \{|\Phi^+\rangle, |\Phi^-\rangle, |\Psi^+\rangle, |\Psi^-\rangle\}$.
+   - Alice performs Bell-state measurement; Bob executes exact Pauli unitary correction $U(b_0, b_1, |\beta\rangle)$ with fidelity $\mathcal{F} \equiv 1.000000$.
+   - Bob **immediately measures** each recovered qubit in random basis $B_B[i] \in \{Z, X\}$, recording verification record $VK_B = \{(B_B[i], O_B[i])\}$. **Zero quantum memory** is required.
+2. **Deterministic Index Selection & Signature Declaration**:
+   - Alice combines message $M$ with fresh 128-bit nonce $N$: $h = \text{SHA-256}(M \parallel N)$.
+   - Unbiased 8-bit rejection sampling over $h$ selects $M = 8$ distinct token indices $\mathcal{I} \subset \{0, \dots, L-1\}$.
+   - Alice publishes declaration $Dec_A = \{(i, B_A[i], \alpha_A[i])\}_{i \in \mathcal{I}}$. Unselected $L - M$ tokens remain confidential.
+3. **Basis Sifting & Deterministic Threat Detection**:
+   - Bob filters for positions where $B_B[i] == B_A[i]$ (Basis Sifting, expected $n_{\text{sifted}} \approx 4$ tokens).
+   - Evaluates $N_{\text{shots}}=250$ repeated Born-rule ensemble simulation samples per sifted token position ($n \approx 1000$ total statistical samples), empirical QBER, and asymmetric **Wilson 95% Score Confidence Interval** $[LCL, UCL]$.
+   - Evaluates 6-rule transparent **Decision Ledger** (`PASS`, `FAIL`, `NOT REACHED`) with zero AI/ML opacity.
 
 ---
 
@@ -207,30 +208,36 @@ The threat detection pipeline processes every signature through a deterministic 
                                                 ▼
                                    ┌─────────────────────────┐
                                    │  Is Empirical Error E   │─── YES ───► [RULE 4] REJECTED
-                                   │      > 15% (Thigh)?     │             Threat: Signature Forgery
-                                   └────────────┬────────────┘
+                                   │      > 15% (Thigh)?     │             Threat: Quantum Forgery (E > 38%)
+                                   └────────────┬────────────┘             or Intercept-Resend (E <= 38%)
                                                 │ NO
                                                 ▼
                                    ┌─────────────────────────┐
                                    │  Is Empirical Error E   │─── YES ───► [RULE 5] SUSPICIOUS
-                                   │      > 5% (Tlow)?       │             Threat: Channel Noise / Eavesdropping
+                                   │      > 5% (Tlow)?       │             Threat: Intermediate Disturbance
                                    └────────────┬────────────┘
                                                 │ NO
                                                 ▼
                                      ┌─────────────────────┐
                                      │  [RULE 6] VERIFIED  │
                                      │ Signature Authentic │
+                                     │ (Wilson UCL <= 5%)  │
                                      └─────────────────────┘
 ```
+
+> [!NOTE]
+> **Benchmark Classification Boundary ($QBER \approx 0.38$)**: In this educational simulation platform, an empirical threshold of $38\%$ (the midpoint between theoretical intercept-resend disturbance $E \approx 25\%$ and blind forgery guessing $E \approx 50\%$) is used strictly as a benchmark classifier to distinguish likely active conjugate eavesdropping from total unentangled forgery. This $0.38$ cutoff is an empirical model/benchmark classification threshold, **not** a fundamental quantum-security limit or formally proven cryptographic boundary.
 
 ### Cyber Threat Classification Matrix:
 
 | Attack Vector | Adversary Action & Symptom | Mathematical Indicator | Deterministic Rule | System Action | Severity |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Signature Forgery** | Attacker lacks entangled state; guesses Pauli measurement basis. | $E \approx 48\% - 52\%$, $P_{\text{forge}} > 99.9\%$ | **RULE 4**: $E > T_{\text{high}}$ (0.15) | Immediate Rejection & Incident Alert | **HIGH** |
+| **Signature Forgery** | Attacker lacks entangled state; guesses Pauli measurement basis. | $E \approx 48\% - 52\%$, $P_{\text{forge}} > 99.9\%$ | **RULE 4**: $E > T_{\text{high}}$ (0.15), $E > 0.38$ | Immediate Rejection & Incident Alert | **HIGH** |
+| **Intercept-Resend Eavesdropping** | Attacker measures in random conjugate basis, disturbing state. | $E \approx 25\%$ (disturbance in $[15\%, 38\%]$) | **RULE 4**: $E > T_{\text{high}}$ (0.15), $E \le 0.38$ | Immediate Rejection & Eavesdropping Alert | **HIGH** |
+| **Intermediate Channel Disturbance** | Elevated channel decoherence or weak disturbance above baseline. | $5\% < E \le 15\%$ ($T_{\text{low}} < E \le T_{\text{high}}$) | **RULE 5**: $T_{\text{low}} < E \le T_{\text{high}}$ | Flag as Suspicious & Request Retransmit | **MEDIUM** |
+| **Channel Noise Acceptance** | Legitimate transmission within calibrated low-noise channel. | $E \le 5\%$ and $\text{Wilson } UCL \le 5\%$ | **RULE 6**: $\text{Wilson } UCL \le T_{\text{low}}$ | Cryptographic Signature Verified | **LOW** |
 | **Signer Impersonation** | Attacker signs message using unauthorized signer identity (`Eve-Malicious`). | Identity lookup mismatch against key registry. | **RULE 1**: `signer_authorized == FALSE` | Immediate Rejection & Auth Alert | **HIGH** |
 | **Replay Attack** | Attacker intercepts and resubmits an authentic signature and nonce. | Cryptographic nonce already exists in consumed nonces table. | **RULE 3**: `nonce_consumed == TRUE` | Immediate Rejection & Replay Alert | **CRITICAL** |
-| **Channel Noise / Eavesdropping** | Intercept-resend eavesdropping or quantum decoherence on transit. | Elevated error rate ($5\% < E \le 15\%$). | **RULE 5**: $T_{\text{low}} < E \le T_{\text{high}}$ | Flag as Suspicious & Request Retransmit | **MEDIUM** |
 | **Message Tampering** | Plaintext message altered during transmission. | $\text{SHA-256}(M_{\text{received}}) \neq H_{\text{stored}}$ | **RULE 2**: `digest_match == FALSE` | Immediate Rejection & Integrity Alert | **CRITICAL** |
 
 ---
@@ -238,7 +245,7 @@ The threat detection pipeline processes every signature through a deterministic 
 ## 🚀 In-Depth Feature Walkthrough Guide
 
 ### 1. Real-Time Operational Dashboard
-- **Top KPI Cards**: Displays Active Signatures, Total Verification Sessions, Detected Threat Incidents, Protocol Success Rate (100%), and Average Backend Latency (~2.5ms).
+- **Top KPI Cards**: Displays Active Signatures, Total Verification Sessions, Detected Threat Incidents, Protocol Success Rate (100% on benchmark), and Average Backend Latency (~2.5ms).
 - **Live Threat Distribution**: Donut and Bar charts categorizing historical and real-time threats (Forgery, Impersonation, Replay, Channel Noise).
 - **Error Rate Timeline**: Chronological plot showing empirical error rates over time alongside the lower ($5\%$) and upper ($15\%$) security threshold bounds.
 - **Recent Activity Audit Feed**: Live table showing recent signatures, signers, decisions, and timestamps.
@@ -306,9 +313,9 @@ Click **"Run Complete Demo"** in the top navigation bar to trigger an end-to-end
 3. Entangles Bell pair $|\Phi^+\rangle$ with concurrence $C = 1.0$.
 4. Executes 3-qubit quantum teleportation circuit.
 5. Applies Bob's Pauli correction matrix with fidelity $\mathcal{F} = 1.000$.
-6. Runs $1000$ projective measurement shots in Z-basis.
+6. Evaluates $n_{\text{sifted}} \approx 4$ basis-sifted tokens with $N_{\text{shots}}=250$ repeated Born-rule ensemble simulation samples per token position ($n \approx 1000$ statistical sample size).
 7. Computes Wilson 95% CI and verifies legitimate signature (`VERIFIED`).
-8. Injects simulated Signature Forgery attack ($E = 50\%$).
+8. Injects simulated Signature Forgery attack ($E \approx 50\%$).
 9. Deterministic engine triggers **RULE 4** and rejects forgery (`REJECTED`).
 10. Injects Nonce Replay attack $\implies$ deterministic engine triggers **RULE 3** (`REJECTED`).
 11. Generates security incident alert records.
@@ -574,7 +581,7 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run test suite (38 tests)
+# Run test suite (47 tests)
 python -m pytest tests -v
 
 # Start FastAPI backend server
@@ -614,7 +621,7 @@ docker-compose up --build
 
 ## ✅ Verification & Unit Testing Suite
 
-The repository includes a comprehensive unit and integration test suite with **38 tests** validating quantum mechanics, statistical interval calculations, deterministic threat rules, dual quantum backend consistency, and REST API routes.
+The repository includes a comprehensive unit and integration test suite with **47 tests** validating quantum mechanics, statistical interval calculations, deterministic threat rules, dual quantum backend consistency, and REST API routes.
 
 ```bash
 cd backend
@@ -625,18 +632,20 @@ python -m pytest tests -v
 - `test_quantum.py`: Unitary properties of gates, Bell state concurrence, 3-qubit teleportation fidelity ($\mathcal{F} = 1.0$), and Born rule projective distributions.
 - `test_backend_comparison.py`: Cross-validates `NumPyBackend` vs `QiskitBackend` output consistency, gate translations, and circuit diagrams.
 - `test_experiments.py`: Validates automated parameter sweeps, noise stepping, and statistical persistence.
-- `test_threat_detection.py`: Verifies deterministic catch rate for Forgery, Impersonation, Replay, Tampering, and Channel Noise.
+- `test_qds_protocol.py`: Verifies memory-free QDS token table generation, deterministic index selection, basis sifting, and end-to-end signing and verification.
+- `test_threat_detection.py`: Verifies deterministic catch rate for Forgery, Impersonation, Replay, Tampering, and Channel Noise, including Decision Ledger short-circuiting.
+- `test_statistics.py`: Validates Wilson score intervals, Bayesian likelihood calculations, and Fisher's exact test.
 - `test_api.py`: Validates all FastAPI endpoints, response schemas, and error handlers.
 
 ---
 
-## 📜 Academic Research Context & License
+## 📜 Academic Research Context & References
 
 This project was developed as an academic research prototype to demonstrate:
 1. Exact simulation of Teleportation-Based Quantum Digital Signature (QDS) protocols.
 2. Deterministic, explainable, protocol-aware cyber threat detection without non-deterministic AI/ML models.
 
-### Citation
+### Project Citation
 If you use this project or its formulations in academic work, please cite:
 ```bibtex
 @misc{doshi2026quantumqds,
@@ -646,6 +655,60 @@ If you use this project or its formulations in academic work, please cite:
   publisher = {GitHub},
   journal = {GitHub repository},
   howpublished = {\url{https://github.com/Yashpareshdoshi/Digi_Signature}}
+}
+```
+
+### Foundational Literature References
+```bibtex
+@article{bennett1993teleporting,
+  title={Teleporting an unknown quantum state via dual classical and Einstein-Podolsky-Rosen channels},
+  author={Bennett, Charles H. and Brassard, Gilles and Cr{\'e}peau, Claude and Jozsa, Richard and Peres, Asher and Wootters, William K.},
+  journal={Physical Review Letters},
+  volume={70},
+  number={13},
+  pages={1895--1899},
+  year={1993},
+  publisher={APS}
+}
+
+@article{gottesman2001quantum,
+  title={Quantum digital signatures},
+  author={Gottesman, Daniel and Chuang, Isaac},
+  journal={arXiv preprint quant-ph/0105032},
+  year={2001}
+}
+
+@article{andersson2006experimentally,
+  title={Experimentally realizable quantum digital signatures without quantum memory},
+  author={Andersson, Erika and Curty, Marcos and Jex, Igor},
+  journal={Physical Review A},
+  volume={74},
+  number={2},
+  pages={022304},
+  year={2006},
+  publisher={APS}
+}
+
+@article{collins2014realization,
+  title={Realization of quantum digital signatures without the requirement of quantum memory},
+  author={Collins, Robert J. and Donaldson, Ross J. and Clarke, Paul J. and Reis, Patrick and Andersson, Erika and Buller, Gerald S.},
+  journal={Physical Review Letters},
+  volume={113},
+  number={4},
+  pages={040502},
+  year={2014},
+  publisher={APS}
+}
+
+@article{wallden2015quantum,
+  title={Quantum digital signatures with fully practical classical communication and secure against forging and repudiation},
+  author={Wallden, Petros and Dunjko, Vedran and Kent, Adrian and Andersson, Erika},
+  journal={Physical Review A},
+  volume={91},
+  number={4},
+  pages={042304},
+  year={2015},
+  publisher={APS}
 }
 ```
 

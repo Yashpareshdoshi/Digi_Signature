@@ -3,6 +3,7 @@ import { CheckCircle, ShieldCheck, ShieldAlert, AlertTriangle, Play, HelpCircle,
 import { api } from '../services/api';
 import { Signature, VerificationSession } from '../types';
 import { DecisionBadge } from '../components/DecisionBadge';
+import { DecisionLedgerView } from '../components/DecisionLedgerView';
 
 export const Verification: React.FC = () => {
   const [signatures, setSignatures] = useState<Signature[]>([]);
@@ -283,37 +284,13 @@ export const Verification: React.FC = () => {
             </div>
           </div>
 
-          {/* Deterministic Rule Engine Explanation */}
-          {verificationResult.rule_details && (
-            <div className="cyber-card space-y-3 font-mono text-xs">
-              <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <Scale className="w-4 h-4 text-cyan-400" />
-                <span>Deterministic Rule Evaluation Audit</span>
-              </h3>
-
-              <div className="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-2">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Rule Triggered</span>
-                    <span className="text-cyan-300 font-semibold">{verificationResult.rule_details.rule_triggered}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Confidence Derivation</span>
-                    <span className="text-slate-200 font-semibold">{verificationResult.rule_details.confidence}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Severity Tier</span>
-                    <span className="text-rose-400 font-semibold">{verificationResult.rule_details.severity}</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-slate-800/80">
-                  <span className="text-slate-500 text-[10px] block">Recommended Action</span>
-                  <span className="text-emerald-300 font-sans text-xs">{verificationResult.rule_details.action_recommended}</span>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Deterministic Decision Ledger & QDS Sifted Measurement Breakdown */}
+          <DecisionLedgerView
+            decisionLedger={verificationResult.decision_ledger}
+            qdsDetails={verificationResult.qds_details}
+            statisticalDetails={verificationResult.statistical_details}
+            ruleDetails={verificationResult.rule_details}
+          />
         </div>
       )}
     </div>
