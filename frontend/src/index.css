@@ -4,41 +4,61 @@
 
 @layer base {
   body {
-    @apply bg-[#0a0d14] text-slate-100;
+    @apply bg-[#080b12] text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* Custom glow effects and scrollbar */
+/* Custom subtle scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0d14;
+  background: #080b12;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #1e293b;
-  border-radius: 4px;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
 
+/* Clean, modern cybersecurity cards */
 .cyber-card {
-  @apply bg-[#111726]/90 border border-slate-800/80 rounded-xl p-5 backdrop-blur-md transition-all duration-200 hover:border-slate-700/80;
+  @apply bg-[#0e1322] border border-slate-800/90 rounded-xl p-5 shadow-sm transition-all duration-200 hover:border-slate-700;
 }
 
+.cyber-card-interactive {
+  @apply bg-[#0e1322] border border-slate-800/90 rounded-xl p-5 shadow-sm transition-all duration-200 hover:border-cyan-500/50 hover:bg-[#111728] cursor-pointer;
+}
+
+/* Subtle, restrained status borders */
+.border-status-pass {
+  @apply border-emerald-500/40 bg-emerald-950/20 text-emerald-400;
+}
+
+.border-status-fail {
+  @apply border-rose-500/40 bg-rose-950/20 text-rose-400;
+}
+
+.border-status-pending {
+  @apply border-slate-700 bg-slate-900/40 text-slate-400;
+}
+
+/* Restrained glowing badges */
 .cyber-glow {
-  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.15);
+  box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.15);
 }
 
 .cyber-glow-danger {
-  box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 15px -3px rgba(239, 68, 68, 0.15);
 }
 
 .cyber-glow-success {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.15);
 }

@@ -1,11 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, ShieldCheck, ShieldAlert, AlertTriangle, Play, HelpCircle, Activity, Scale } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import {
+  CheckCircle,
+  ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
+  Play,
+  Activity,
+  Scale,
+  Percent,
+  Lock,
+  Database,
+  RefreshCw,
+  Sparkles,
+  CheckCircle2,
+  XCircle,
+  MinusCircle
+} from 'lucide-react';
 import { api } from '../services/api';
 import { Signature, VerificationSession } from '../types';
 import { DecisionBadge } from '../components/DecisionBadge';
 import { DecisionLedgerView } from '../components/DecisionLedgerView';
+import { StepIndicator } from '../components/StepIndicator';
 
 export const Verification: React.FC = () => {
+  const location = useLocation();
   const [signatures, setSignatures] = useState<Signature[]>([]);
   const [selectedSigId, setSelectedSigId] = useState('');
   const [verifierId, setVerifierId] = useState('Verifier-Bob');
@@ -27,7 +46,13 @@ export const Verification: React.FC = () => {
     try {
       const data = await api.listSignatures();
       setSignatures(data);
-      if (data.length > 0) {
+
+      const preselected = (location.state as any)?.selectedSignatureId;
+      if (preselected && data.some((s) => s.signature_id === preselected)) {
+        setSelectedSigId(preselected);
+        const found = data.find((s) => s.signature_id === preselected);
+        if (found) setClaimedSignerId(found.signer_id);
+      } else if (data.length > 0) {
         setSelectedSigId(data[0].signature_id);
         setClaimedSignerId(data[0].signer_id);
       }
@@ -45,9 +70,10 @@ export const Verification: React.FC = () => {
     }
   };
 
+  // Primary verification call
   const handleVerify = async () => {
     if (!selectedSigId) {
-      setError('Please select a signature.');
+      setError('Please select a signature to verify.');
       return;
     }
 
@@ -71,41 +97,162 @@ export const Verification: React.FC = () => {
     }
   };
 
-  const selectedSignature = signatures.find((s) => s.signature_id === selectedSigId);
+  // 1-Click Judge Demonstrations
+  const handleJudgeDemo = async (demoType: 'legitimate' | 'tamper' | 'replay') => {
+    if (!selectedSigId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      let res: VerificationSession;
+
+      if (demoType === 'legitimate') {
+        setTamperedMessage('');
+        setSimulateReplay(false);
+        setNoiseRate(0.0);
+        res = await api.startVerification({
+          signature_id: selectedSigId,
+          verifier_id: 'Verifier-Bob',
+          shots,
+          noise_rate: 0.0,
+        });
+      } else if (demoType === 'tamper') {
+        const fakeMsg = 'Tampered Payload: Wire Transfer $50,000 to Unauthorized Node';
+        setTamperedMessage(fakeMsg);
+        setSimulateReplay(false);
+        res = await api.startVerification({
+          signature_id: selectedSigId,
+          verifier_id: 'Verifier-Bob',
+          custom_message: fakeMsg,
+          shots,
+        });
+      } else {
+        setSimulateReplay(true);
+        setTamperedMessage('');
+        res = await api.startVerification({
+          signature_id: selectedSigId,
+          verifier_id: 'Verifier-Bob',
+          shots,
+          simulate_nonce_reuse: true,
+        });
+      }
+      setVerificationResult(res);
+    } catch (err: any) {
+      setError(err.message || 'Judge demonstration execution failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Derive verification checks status from actual backend response
+  const getVerificationChecks = () => {
+    if (!verificationResult) return [];
+
+    const isMessageTampered = verificationResult.threat_detected === 'MESSAGE_TAMPERING';
+    const isReplay = verificationResult.threat_detected === 'REPLAY_ATTACK';
+    const isImpersonation = verificationResult.threat_detected === 'IMPERSONATION';
+    const isForgery = verificationResult.threat_detected === 'SIGNATURE_FORGERY';
+    const isNoise = verificationResult.threat_detected === 'CHANNEL_NOISE';
+    const isVerified = verificationResult.decision === 'VERIFIED';
+
+    return [
+      {
+        name: 'Signer Identity',
+        desc: 'Verified in Authorization Registry',
+        status: isImpersonation ? 'FAIL' : 'PASS',
+      },
+      {
+        name: 'SHA-256 Integrity',
+        desc: 'Message Content Digest Check',
+        status: isMessageTampered ? 'FAIL' : 'PASS',
+      },
+      {
+        name: 'Nonce Freshness',
+        desc: 'Single-Use Replay Protection',
+        status: isReplay ? 'FAIL' : 'PASS',
+      },
+      {
+        name: 'Quantum Error Threshold',
+        desc: 'QBER ≤ T_high (15%) Bound',
+        status: isForgery || verificationResult.error_rate > 0.15 ? 'FAIL' : (isMessageTampered || isReplay ? 'NOT REACHED' : 'PASS'),
+      },
+      {
+        name: 'Statistical Confidence',
+        desc: 'Wilson 95% CI ≤ T_low (5%)',
+        status: isVerified ? 'PASS' : (verificationResult.error_rate <= 0.05 && !isMessageTampered && !isReplay && !isImpersonation ? 'PASS' : 'FAIL'),
+      },
+    ];
+  };
+
+  const checks = getVerificationChecks();
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <CheckCircle className="w-5 h-5 text-emerald-400" />
-          <span>Deterministic Quantum Digital Signature Verification Center</span>
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Rigorous statistical and protocol-aware threat evaluation based on measurement error rates, Wilson confidence intervals, and cryptographic nonces (Zero AI/ML).
-        </p>
+      {/* Workflow Step Indicator: Steps 4 & 5 */}
+      <StepIndicator currentStep={verificationResult ? 5 : 4} />
+
+      {/* Top Banner */}
+      <div className="cyber-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-white tracking-wide">
+              Signature Verification
+            </h1>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+              Bob's Verifier Node
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Evaluate classical digest integrity, cryptographic nonce freshness, and quantum measurement statistics.
+          </p>
+        </div>
+
+        {/* Quick Demo Buttons for Judges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] text-slate-400 font-semibold hidden sm:inline">Judge Demos:</span>
+          <button
+            onClick={() => handleJudgeDemo('legitimate')}
+            disabled={loading || !selectedSigId}
+            className="px-2.5 py-1.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900 text-xs font-semibold transition-colors disabled:opacity-50"
+          >
+            DEMO 1: Legitimate
+          </button>
+          <button
+            onClick={() => handleJudgeDemo('tamper')}
+            disabled={loading || !selectedSigId}
+            className="px-2.5 py-1.5 rounded-lg bg-amber-950 text-amber-300 border border-amber-500/40 hover:bg-amber-900 text-xs font-semibold transition-colors disabled:opacity-50"
+          >
+            DEMO 2: Tampering
+          </button>
+          <button
+            onClick={() => handleJudgeDemo('replay')}
+            disabled={loading || !selectedSigId}
+            className="px-2.5 py-1.5 rounded-lg bg-purple-950 text-purple-300 border border-purple-500/40 hover:bg-purple-900 text-xs font-semibold transition-colors disabled:opacity-50"
+          >
+            DEMO 3: Replay
+          </button>
+        </div>
       </div>
 
-      {/* Verification Control Console */}
+      {/* Verification Parameters Card */}
       <div className="cyber-card space-y-4">
-        <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-          Verification Parameters & Test Injections
-        </h3>
+        <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-slate-800/80 pb-2.5">
+          Select Signature & Test Parameters
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {/* Signature Selector */}
           <div className="lg:col-span-2">
-            <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-400 mb-1">
               Select Signature to Verify
             </label>
             <select
               value={selectedSigId}
               onChange={(e) => handleSelectSignature(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
             >
               {signatures.map((s) => (
                 <option key={s.signature_id} value={s.signature_id}>
-                  {s.signature_id} — "{s.message}" ({s.signer_id}, {s.status})
+                  {s.signature_id} — "{s.message}" ({s.signer_id})
                 </option>
               ))}
             </select>
@@ -113,62 +260,62 @@ export const Verification: React.FC = () => {
 
           {/* Verifier ID */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-400 mb-1">
               Verifier Identity
             </label>
             <select
               value={verifierId}
               onChange={(e) => setVerifierId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
             >
-              <option value="Verifier-Bob">Verifier-Bob (Authorized)</option>
-              <option value="Verifier-Dave">Verifier-Dave (Authorized)</option>
+              <option value="Verifier-Bob">Verifier-Bob (Authorized Node)</option>
+              <option value="Verifier-Dave">Verifier-Dave (Secondary Auditor)</option>
               <option value="Unknown-Entity">Unknown-Entity (Unauthorized)</option>
             </select>
           </div>
 
           {/* Claimed Signer Identity */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">
-              Claimed Signer Identity
+            <label className="block text-xs font-semibold text-slate-400 mb-1">
+              Claimed Signer
             </label>
             <input
               type="text"
               value={claimedSignerId}
               onChange={(e) => setClaimedSignerId(e.target.value)}
               placeholder="Signer-Alice"
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
             />
           </div>
 
           {/* Message Tamper Simulator */}
           <div className="lg:col-span-2">
-            <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">
-              Tampered Message Test (Optional - Test SHA-256 Integrity)
+            <label className="block text-xs font-semibold text-slate-400 mb-1">
+              Tamper Test (Leave empty to test original message)
             </label>
             <input
               type="text"
               value={tamperedMessage}
               onChange={(e) => setTamperedMessage(e.target.value)}
-              placeholder="Leave empty to use original message"
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
+              placeholder="Leave empty to use original signature message"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-100 font-mono focus:border-cyan-500 focus:outline-none"
             />
           </div>
 
-          {/* Noise Slider */}
+          {/* Channel Disturbance Slider */}
           <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-400 uppercase mb-1">
-              <span>Channel Noise</span>
+            <div className="flex justify-between text-xs font-semibold text-slate-400 mb-1">
+              <span>Channel Disturbance</span>
               <span className="text-cyan-400 font-mono">{(noiseRate * 100).toFixed(0)}%</span>
             </div>
             <input
               type="range"
               min="0"
-              max="0.5"
+              max="0.4"
               step="0.02"
               value={noiseRate}
               onChange={(e) => setNoiseRate(parseFloat(e.target.value))}
-              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400 mt-2"
             />
           </div>
 
@@ -182,109 +329,155 @@ export const Verification: React.FC = () => {
               className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500"
             />
             <label htmlFor="replayCheck" className="text-xs text-slate-300 select-none cursor-pointer">
-              Simulate Nonce Reuse / Replay
+              Simulate Stolen Nonce Replay
             </label>
           </div>
         </div>
 
-        {/* Execute Verification Button */}
+        {/* Action Button */}
         <div className="pt-2">
           <button
             onClick={handleVerify}
             disabled={loading}
-            className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+            className="px-6 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md transition-all active:scale-95 disabled:opacity-50"
           >
             <Play className="w-4 h-4 fill-slate-950" />
-            <span>Execute Deterministic Verification</span>
+            <span>Execute Verification Check</span>
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500 text-rose-300 text-xs font-mono">
+        <div className="p-3 rounded-lg bg-rose-950/80 border border-rose-500 text-rose-300 text-xs font-mono">
           {error}
         </div>
       )}
 
-      {/* Verification Decision & Statistical Breakdown */}
+      {/* Prominent Verification Result (Step 8) */}
       {verificationResult && (
         <div className="space-y-6">
-          {/* Main Decision Banner */}
+          {/* Prominent Result Banner */}
           <div
-            className={`p-5 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 font-mono ${
+            className={`p-6 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono ${
               verificationResult.decision === 'VERIFIED'
-                ? 'bg-emerald-950/40 border-emerald-500/60'
+                ? 'bg-emerald-950/30 border-emerald-500/60'
                 : verificationResult.decision === 'SUSPICIOUS'
-                ? 'bg-amber-950/40 border-amber-500/60'
-                : 'bg-rose-950/40 border-rose-500/60'
+                ? 'bg-amber-950/30 border-amber-500/60'
+                : 'bg-rose-950/30 border-rose-500/60'
             }`}
           >
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex items-center gap-3">
-                <DecisionBadge decision={verificationResult.decision} threat={verificationResult.threat_detected} size="lg" />
-                <span className="text-sm font-semibold text-slate-200">
-                  Session ID: {verificationResult.session_id}
+                <span
+                  className={`text-xl font-black px-3.5 py-1 rounded-md uppercase tracking-wider ${
+                    verificationResult.decision === 'VERIFIED'
+                      ? 'bg-emerald-500 text-slate-950'
+                      : verificationResult.decision === 'SUSPICIOUS'
+                      ? 'bg-amber-500 text-slate-950'
+                      : 'bg-rose-500 text-slate-950'
+                  }`}
+                >
+                  {verificationResult.decision}
                 </span>
+
+                {verificationResult.threat_detected !== 'NONE' && (
+                  <span className="text-xs px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-rose-300">
+                    Threat: {verificationResult.threat_detected}
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-slate-300 mt-1 font-sans">
+
+              <p className="text-xs text-slate-300 font-sans leading-relaxed">
                 {verificationResult.reason}
               </p>
             </div>
 
-            <div className="text-right text-xs">
-              <span className="text-slate-400 block text-[11px]">Processing Latency</span>
-              <span className="text-cyan-300 font-bold">{verificationResult.latency_ms.toFixed(2)} ms</span>
+            <div className="text-right text-xs text-slate-400">
+              <span className="block text-[10px] text-slate-500">Processing Latency</span>
+              <span className="font-bold text-cyan-300 text-sm">{verificationResult.latency_ms.toFixed(2)} ms</span>
             </div>
           </div>
 
-          {/* 4 Quantitative Pillars */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Verification Checks Grid (Pass / Fail / Not Reached) */}
+          <div className="cyber-card space-y-3">
+            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+              Cryptographic & Quantum Invariant Checks
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {checks.map((chk) => (
+                <div
+                  key={chk.name}
+                  className="p-3 rounded-lg bg-slate-950/70 border border-slate-800 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold text-slate-200">{chk.name}</span>
+                      {chk.status === 'PASS' && (
+                        <span className="text-[10px] font-bold text-emerald-400 font-mono">✓ PASS</span>
+                      )}
+                      {chk.status === 'FAIL' && (
+                        <span className="text-[10px] font-bold text-rose-400 font-mono">✕ FAIL</span>
+                      )}
+                      {chk.status === 'NOT REACHED' && (
+                        <span className="text-[10px] font-medium text-slate-500 font-mono">— NOT REACHED</span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400">{chk.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* QBER / Statistics Cards (Step 10) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="cyber-card text-center font-mono">
-              <span className="text-xs text-slate-400 uppercase block mb-1">Observed Error Rate (E)</span>
-              <span className="text-2xl font-extrabold text-cyan-300">
+              <span className="text-[11px] text-slate-400 uppercase block mb-1">QBER (Error Rate)</span>
+              <span className="text-2xl font-bold text-cyan-300">
                 {(verificationResult.error_rate * 100).toFixed(2)}%
               </span>
               <span className="text-[10px] text-slate-500 block mt-1">
-                {verificationResult.error_count} / {verificationResult.measurement_count} Unexpected Shots
+                {verificationResult.error_count} / {verificationResult.measurement_count} Shots
               </span>
             </div>
 
             <div className="cyber-card text-center font-mono">
-              <span className="text-xs text-slate-400 uppercase block mb-1">Wilson 95% CI</span>
-              <span className="text-xl font-bold text-amber-300">
+              <span className="text-[11px] text-slate-400 uppercase block mb-1">Wilson 95% CI</span>
+              <span className="text-lg font-bold text-amber-300">
                 [{(verificationResult.confidence_lower * 100).toFixed(2)}%, {(verificationResult.confidence_upper * 100).toFixed(2)}%]
               </span>
               <span className="text-[10px] text-slate-500 block mt-1">
-                Binomial Proportion Bound
+                Confidence Bound
               </span>
             </div>
 
             <div className="cyber-card text-center font-mono">
-              <span className="text-xs text-slate-400 uppercase block mb-1">Estimated Forgery Prob</span>
-              <span className={`text-2xl font-extrabold ${verificationResult.forgery_probability > 0.5 ? 'text-rose-400' : 'text-emerald-400'}`}>
+              <span className="text-[11px] text-slate-400 uppercase block mb-1">Estimated Forgery Prob</span>
+              <span className={`text-2xl font-bold ${verificationResult.forgery_probability > 0.5 ? 'text-rose-400' : 'text-emerald-400'}`}>
                 {(verificationResult.forgery_probability * 100).toFixed(2)}%
               </span>
               <span className="text-[10px] text-slate-500 block mt-1">
-                Likelihood Ratio vs Guessing
+                Likelihood vs Guessing
               </span>
             </div>
 
             <div className="cyber-card text-center font-mono">
-              <span className="text-xs text-slate-400 uppercase block mb-1">Threshold Classification</span>
-              <span className="text-base font-bold text-slate-200">
+              <span className="text-[11px] text-slate-400 uppercase block mb-1">Safety Classification</span>
+              <span className="text-sm font-bold text-slate-200 mt-1 block">
                 {verificationResult.error_rate <= 0.05
-                  ? 'E ≤ 5% (Verified)'
+                  ? 'E ≤ 5% (Verified Safe)'
                   : verificationResult.error_rate <= 0.15
                   ? '5% < E ≤ 15% (Suspicious)'
-                  : 'E > 15% (High Risk / Reject)'}
+                  : 'E > 15% (High Risk Attack)'}
               </span>
               <span className="text-[10px] text-slate-500 block mt-1">
-                Configured T_low=5%, T_high=15%
+                Threshold: T_low=5%, T_high=15%
               </span>
             </div>
           </div>
 
-          {/* Deterministic Decision Ledger & QDS Sifted Measurement Breakdown */}
+          {/* Decision Ledger View (Step 9) */}
           <DecisionLedgerView
             decisionLedger={verificationResult.decision_ledger}
             qdsDetails={verificationResult.qds_details}
