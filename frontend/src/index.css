@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-[#080b12] text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950;
+    @apply bg-[#F5F7FB] text-[#0F172A] dark:bg-[#080b12] dark:text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-150;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
@@ -16,49 +16,96 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #080b12;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #080b12;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
 
-/* Clean, modern cybersecurity cards */
+/* Premium cybersecurity cards: Clean white with subtle soft elevation in Light, sleek dark cyber plate in Dark */
 .cyber-card {
-  @apply bg-[#0e1322] border border-slate-800/90 rounded-xl p-5 shadow-sm transition-all duration-200 hover:border-slate-700;
+  @apply bg-white border border-[#CBD5E1] rounded-2xl p-5 shadow-[0_1px_3px_0_rgba(15,23,42,0.06),0_1px_2px_-1px_rgba(15,23,42,0.04)] text-[#0F172A] transition-all duration-200 hover:border-[#0891B2] hover:shadow-[0_4px_16px_rgba(8,145,178,0.12)] dark:bg-[#0e1322] dark:border-slate-800/90 dark:text-slate-100 dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] dark:hover:border-slate-700;
 }
 
 .cyber-card-interactive {
-  @apply bg-[#0e1322] border border-slate-800/90 rounded-xl p-5 shadow-sm transition-all duration-200 hover:border-cyan-500/50 hover:bg-[#111728] cursor-pointer;
+  @apply bg-white border border-[#CBD5E1] rounded-2xl p-5 shadow-[0_1px_3px_0_rgba(15,23,42,0.06)] text-[#0F172A] transition-all duration-200 hover:border-[#0891B2] hover:shadow-[0_6px_20px_-2px_rgba(8,145,178,0.18)] hover:-translate-y-0.5 dark:bg-[#0e1322] dark:border-slate-800/90 dark:text-slate-100 dark:shadow-none dark:hover:border-cyan-500/50 dark:hover:bg-[#111728] cursor-pointer;
 }
 
-/* Subtle, restrained status borders */
+/* Secondary surface / nested cards */
+.cyber-subcard {
+  @apply bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 text-[#0F172A] transition-all duration-150 hover:border-[#0891B2]/60 hover:bg-[#F0FDFF] dark:bg-[#070b14] dark:border-slate-800/90 dark:text-slate-200 dark:hover:bg-slate-900/60;
+}
+
+.cyber-terminal {
+  @apply bg-[#0B1120] text-cyan-300 border border-slate-800 rounded-xl p-3.5 font-mono text-xs shadow-inner;
+}
+
+/* Master soft badge classes for light mode with dark mode preservation */
+.badge-critical {
+  @apply bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-500/40;
+}
+
+.badge-high {
+  @apply bg-[#FFF7ED] text-[#EA580C] border border-[#FED7AA] dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-500/40;
+}
+
+.badge-medium {
+  @apply bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-500/30;
+}
+
+.badge-low {
+  @apply bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0] dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-500/40;
+}
+
+.badge-cyan {
+  @apply bg-[#ECFEFF] text-[#0891B2] border border-[#A5F3FC] dark:bg-cyan-950/80 dark:text-cyan-300 dark:border-cyan-500/30;
+}
+
+.badge-blue {
+  @apply bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-500/30;
+}
+
+/* Status borders */
 .border-status-pass {
-  @apply border-emerald-500/40 bg-emerald-950/20 text-emerald-400;
+  @apply border-emerald-400/80 bg-emerald-50 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-950/20 dark:text-emerald-400;
 }
 
 .border-status-fail {
-  @apply border-rose-500/40 bg-rose-950/20 text-rose-400;
+  @apply border-rose-400/80 bg-rose-50 text-rose-800 dark:border-rose-500/40 dark:bg-rose-950/20 dark:text-rose-400;
 }
 
 .border-status-pending {
-  @apply border-slate-700 bg-slate-900/40 text-slate-400;
+  @apply border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400;
 }
 
-/* Restrained glowing badges */
+/* Glowing badges adapted for both modes */
 .cyber-glow {
-  box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.15);
+  box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.35);
 }
 
 .cyber-glow-danger {
-  box-shadow: 0 0 15px -3px rgba(239, 68, 68, 0.15);
+  box-shadow: 0 0 15px -3px rgba(239, 68, 68, 0.35);
 }
 
 .cyber-glow-success {
-  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.35);
 }
+

@@ -232,6 +232,7 @@ export interface AttackRecord {
   verification_session?: Partial<VerificationSession>;
   alert_generated?: Partial<AlertRecord>;
   comparison?: Record<string, any>;
+  decision_ledger?: DecisionLedger;
 }
 
 export interface AlertRecord {

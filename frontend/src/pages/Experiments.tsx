@@ -189,40 +189,40 @@ export const Experiments: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-purple-400" />
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             <span>Academic Experimental Framework & Threat Evaluation</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
             Conduct parameterized empirical trials across varying measurement shot counts (100–10,000), channel noise levels, and attack intensities.
           </p>
         </div>
 
         <button
           onClick={handleExportJSON}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs flex items-center gap-1.5 border border-slate-700 transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700 text-xs flex items-center gap-1.5 transition-colors shadow-sm"
         >
-          <Download className="w-3.5 h-3.5 text-cyan-400" />
+          <Download className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
           <span>Export Trial Data (JSON)</span>
         </button>
       </div>
 
       {/* Experiment Controls Console */}
       <div className="cyber-card space-y-4 font-mono text-xs">
-        <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-purple-400" />
+        <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+          <Sliders className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           <span>Trial Parameters & Configuration</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-slate-400 uppercase font-semibold mb-1">Scenario Vector</label>
+            <label className="block text-slate-600 dark:text-slate-400 uppercase font-semibold mb-1">Scenario Vector</label>
             <select
               value={scenario}
               onChange={(e) => setScenario(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-purple-600 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 shadow-sm"
             >
               <option value="LEGITIMATE">Legitimate Signature (No Threat)</option>
               <option value="FORGERY">Signature Forgery (Unentangled Fabricated State)</option>
@@ -233,11 +233,11 @@ export const Experiments: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-slate-400 uppercase font-semibold mb-1">Measurement Shots (n)</label>
+            <label className="block text-slate-600 dark:text-slate-400 uppercase font-semibold mb-1">Measurement Shots (n)</label>
             <select
               value={shots}
               onChange={(e) => setShots(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-purple-600 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 shadow-sm"
             >
               <option value={100}>100 Shots</option>
               <option value={500}>500 Shots</option>
@@ -248,11 +248,11 @@ export const Experiments: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-slate-400 uppercase font-semibold mb-1">Attack Intensity</label>
+            <label className="block text-slate-600 dark:text-slate-400 uppercase font-semibold mb-1">Attack Intensity</label>
             <select
               value={intensity}
               onChange={(e) => setIntensity(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-purple-600 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 shadow-sm"
             >
               <option value="LOW">Low Intensity</option>
               <option value="MEDIUM">Medium Intensity</option>
@@ -261,9 +261,9 @@ export const Experiments: React.FC = () => {
           </div>
 
           <div>
-            <div className="flex justify-between uppercase font-semibold text-slate-400 mb-1">
+            <div className="flex justify-between uppercase font-semibold text-slate-600 dark:text-slate-400 mb-1">
               <span>Channel Noise (p)</span>
-              <span className="text-purple-300">{(noise * 100).toFixed(0)}%</span>
+              <span className="text-purple-700 dark:text-purple-300 font-bold">{(noise * 100).toFixed(0)}%</span>
             </div>
             <input
               type="range"
@@ -272,16 +272,16 @@ export const Experiments: React.FC = () => {
               step="0.01"
               value={noise}
               onChange={(e) => setNoise(parseFloat(e.target.value))}
-              className="w-full h-2 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400 mt-2"
+              className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded appearance-none cursor-pointer accent-purple-500 mt-2"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-2 flex-wrap">
           <button
             onClick={handleRunExperiment}
             disabled={loading}
-            className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-600/20 transition-all disabled:opacity-50"
+            className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all active:scale-95 disabled:opacity-50"
           >
             <Play className="w-3.5 h-3.5 fill-white" />
             <span>Run Single Trial</span>
@@ -290,9 +290,9 @@ export const Experiments: React.FC = () => {
           <button
             onClick={handleRunAllScenarios}
             disabled={loading}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 border border-slate-700 transition-all disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
           >
-            <FlaskConical className="w-3.5 h-3.5 text-cyan-400" />
+            <FlaskConical className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
             <span>Execute All 5 Scenarios Benchmark</span>
           </button>
         </div>
@@ -300,13 +300,13 @@ export const Experiments: React.FC = () => {
 
       {/* Experimental Evaluation Matrix Table */}
       <div className="cyber-card space-y-3 font-mono text-xs">
-        <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-300 uppercase tracking-wider">
           Empirical Trial Log & Threat Comparison Matrix
         </h3>
 
-        <div className="overflow-x-auto border border-slate-800 rounded-lg">
+        <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-lg">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 text-[11px]">
+            <thead className="bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-400 text-[11px] border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="p-3">Scenario</th>
                 <th className="p-3 text-right">Shots (n)</th>
@@ -318,15 +318,15 @@ export const Experiments: React.FC = () => {
                 <th className="p-3 text-right">Latency</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-transparent">
               {results.map((r, idx) => (
-                <tr key={idx} className="hover:bg-slate-900/60">
-                  <td className="p-3 font-bold text-slate-200">{r.scenario}</td>
-                  <td className="p-3 text-right text-slate-400">{r.shots}</td>
-                  <td className="p-3 text-right text-cyan-300 font-bold">{r.error_rate_pct}%</td>
-                  <td className="p-3 text-right text-slate-400">[{r.ci_lower_pct}%, {r.ci_upper_pct}%]</td>
-                  <td className="p-3 text-right text-amber-300">{r.forgery_probability_pct}%</td>
-                  <td className="p-3 text-slate-300">{r.threat_detected}</td>
+                <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-colors">
+                  <td className="p-3 font-bold text-slate-800 dark:text-slate-200">{r.scenario}</td>
+                  <td className="p-3 text-right text-slate-600 dark:text-slate-400">{r.shots}</td>
+                  <td className="p-3 text-right text-cyan-700 dark:text-cyan-300 font-bold">{r.error_rate_pct}%</td>
+                  <td className="p-3 text-right text-slate-600 dark:text-slate-400">[{r.ci_lower_pct}%, {r.ci_upper_pct}%]</td>
+                  <td className="p-3 text-right text-amber-700 dark:text-amber-300 font-semibold">{r.forgery_probability_pct}%</td>
+                  <td className="p-3 text-slate-700 dark:text-slate-300">{r.threat_detected}</td>
                   <td className="p-3">
                     <DecisionBadge decision={r.decision} size="sm" />
                   </td>
